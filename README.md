@@ -17,6 +17,25 @@ optional arguments:
                         use device with given serial
 
 ```
+
+- padb device-info -b
+```bash
+[device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> parse_args Namespace(basic=True, func=<bound method BaseCommand.__execute of <pyadb.cmd.device_info.DeviceInfo object at 0x102d06f28>>, imei=False, serial_no='', top_activity=False)
+[device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> execute
+ [=     ] model:YAL-AL00
+ [ =    ] brand:HONOR
+ [  =   ] name:YAL-AL00
+ [   =  ] wm size:(1080, 2340)
+ [    = ] wm density:480
+ [     =] android version:10
+ [    = ] imei:A00000AD7B3287
+ [   =  ] ip/mac:('192.168.1.102/24', '0x00001043')
+ [  =   ] board:YAL
+ [ =    ] abilist:['arm64-v8a', 'armeabi-v7a', 'armeabi']
+ [=     ] cpu core size:8
+ [ =    ] heap size/m:512
+
+```
 ## package source code
 - pip3 install setuptools  ; pip3 install wheel
 - python3 setup.py sdist bdist_wheel
