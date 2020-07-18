@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from setuptools import find_packages, setup
-
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 # python setup.py install
 setup(
-    name='pyadb',
-    version='1.0.0',
-    packages=find_packages(include=['app']),
+    name='padb',
+    version='1.0.1',
+    packages=find_packages(include=['pyadb', 'cmd']),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -14,9 +15,11 @@ setup(
 
     author="hawksjamesf",
     author_email="hawksjamesf@gmail.com",
-    description="1234",
-    long_description='123456',
+    description="pyadb tools",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     license="Apache2",
+    url='https://hawksjamesf.github.io/pyadb/',
     # keywords="",
     # url='',
     classifiers=[
@@ -40,7 +43,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'pyadb=pyadb.main:main'
+            'padb=pyadb:create_pyadb',
         ],
     }
 )

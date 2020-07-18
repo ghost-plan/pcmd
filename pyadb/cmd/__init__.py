@@ -113,7 +113,7 @@ def all_commands():
         while clsn.find('_') > 0:
             h = clsn.index('_')
             clsn = clsn[0:h] + clsn[h + 1:].capitalize()
-        module = import_module('.{}'.format(py_filename), package='cmd')
+        module = import_module('.{}'.format(py_filename), package='pyadb.cmd')
         try:
             cmd = getattr(module, clsn)()
         except AttributeError as identifier:

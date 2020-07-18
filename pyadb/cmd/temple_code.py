@@ -1,4 +1,4 @@
-from cmd import BaseCommand
+from pyadb.cmd import BaseCommand
 
 
 class TempleCode(BaseCommand):

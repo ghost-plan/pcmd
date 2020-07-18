@@ -1,11 +1,11 @@
-from cmd import BaseCommand
-from device import (
+from pyadb.cmd import BaseCommand
+from pyadb.device import (
     get_model, get_brand, get_name,
     get_wm_size, get_wm_density, get_android_version,
     get_imei, get_ip_and_mac, get_board,
     get_abilist, get_cpu_core_size, get_heap_size,
 )
-from utils import print_with_bar
+from pyadb.utils import print_with_bar
 
 
 class DeviceInfo(BaseCommand):
