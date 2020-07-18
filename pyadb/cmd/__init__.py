@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 __version__ = "1.0.0"
 __release_date__ = "15-Jun-2020"
 import re
@@ -8,6 +6,7 @@ import os
 import subprocess
 from importlib import import_module
 import sys
+from argparse import ArgumentParser
 
 
 class BaseCommand(object):
@@ -15,31 +14,34 @@ class BaseCommand(object):
     # _subparsers = None
     _serial_no = ''
     _app_client_code = ''
+    _brand = ''
     _subcmd_name = None
 
     def create_parser(self):
         parser = argparse.ArgumentParser(
             usage="command line",
             description=__doc__,
-            version=__version__,
         )
+        parser.add_argument('--version', action='version', version='1.0.0')
         parser.add_argument('-s', '--serial', dest='serial_no', default='',
                             help='use device with given serial')
         subparsers = parser.add_subparsers()
         sp = self._create_parser(subparsers)
         return parser, sp
 
-    def _create_parser(self, p):
+    def _create_parser(self, p) -> ArgumentParser:
         pass
 
     def print_with_cmd(self, content):
-        s = 's/{} cid/{}'.format(self._serial_no, self._app_client_code)
+        s = 'b/{} s/{} cid/{}'.format(self._brand, self._serial_no,
+                                      self._app_client_code)
         print('[{}:{}] >> {}'.format(self._subcmd_name, s, content))
 
     def parse_args(self, parser, subparser, subcmd_name, arguments):
+        subparser.set_defaults(func=self.__execute)
         self._subcmd_name = subcmd_name
         args = parser.parse_args()
-        print(arguments)
+    #    self.print_with_cmd(arguments)
         serial_no = args.serial_no.strip()
         if len(serial_no) == 0:
             devices = self.get_devices()
@@ -52,14 +54,16 @@ class BaseCommand(object):
                 raise BaseException("没有设备连接")
 
         self._serial_no = serial_no
-        # args.func(args, devices)
         self._app_client_code = self.get_app_client_code(serial_no)
         if len((self._app_client_code)) == 0:
-            # sys.exit(0)
+            sys.exit(0)
             pass
+        self._brand = os.popen("adb -s " + self._serial_no +
+                               "  shell getprop ro.product.brand").readlines()[0].strip()
         self.print_with_cmd('parse_args {}'.format(args))
         self._parse_args(args)
-        subparser.set_defaults(func=self._execute)
+        # start execute
+        args.func()
 
     def _parse_args(self, args):
         pass
@@ -72,8 +76,11 @@ class BaseCommand(object):
             client_code += line.split("'")[1].replace('.', "").strip()
         return client_code
 
-    def _execute(self):
+    def __execute(self):
         self.print_with_cmd('execute')
+        self._execute()
+
+    def _execute(self):
         pass
 
     def check_device(self, device):
