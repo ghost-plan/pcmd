@@ -35,6 +35,40 @@ def shell(cmd, fn=None):
                 print('command result : \n%s' % (out_bytes))
 
 
+addDeviceLine = """add device \d+: (.+)"""
+eventTypeLine = """    [A-Z]+ \((\d+)\): .*"""
+eventLine = """(/dev/input/[^:]+): ([0-9a-f]+) ([0-9a-f]+) ([0-9a-f]+)"""
+
+""" 
+ backup [-user USER_ID] [-f FILE] [-apk|-noapk] [-obb|-noobb] [-shared|-noshared]
+        [-all] [-system|-nosystem] [-keyvalue|-nokeyvalue] [PACKAGE...]
+     write an archive of the device's data to FILE [default=backup.adb]
+     package list optional if -all/-shared are supplied
+     -user: user ID for which to perform the operation (default - system user)
+     -apk/-noapk: do/don't back up .apk files (default -noapk)
+     -obb/-noobb: do/don't back up .obb files (default -noobb)
+     -shared|-noshared: do/don't back up shared storage (default -noshared)
+     -all: back up all installed applications
+     -system|-nosystem: include system apps in -all (default -system)
+     -keyvalue|-nokeyvalue: include apps that perform key/value backups.
+         (default -nokeyvalue)
+ restore [-user USER_ID] FILE       restore device contents from FILE
+     -user: user ID for which to perform the operation (default - system user)
+"""
+# backup nonsystem apk
+# adb backup -apk -shared -nosystem -all -f backup_apk.ab
+
+# backup system and nonsystem apk
+# adb backup -apk -noshared -system -all -f backup_apk.ab
+
+# backup individual apk
+# adb backup -apk -shared -nosystem -f testing.ab  -keyvalue com.hawksjamesf.spacecraft.debug
+# adb backup -apk -shared -nosystem -f testing.ab  -keyvalue com.sankuai.meituan
+
+# restore all
+# adb restore backup_apk.ab
+
+
 def capture_event(serial_no):
     cmd = 'adb -s {}  shell getevent -lp'.format(serial_no)
     ret = os.popen(cmd).readlines()
