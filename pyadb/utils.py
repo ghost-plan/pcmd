@@ -103,7 +103,7 @@ def capture_event(serial_no):
     with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
                preexec_fn=os.setsid, encoding='utf-8') as pipe:
         try:
-            i = 0
+#             i = 0
             for line in iter(lambda: pipe.stdout.readline(), ''):
                 if 'ABS_MT_POSITION_X' in line:
                     print('='*100)
@@ -112,15 +112,24 @@ def capture_event(serial_no):
                     raw_x = (int(ABS_MT_POSITION_X, 16) - xmin) * \
                         screen_width / (xmax - xmin)
                     # print(ABS_MT_POSITION_X,int(ABS_MT_POSITION_X,16),raw_x)
-                    line = line.replace(ABS_MT_POSITION_X, str(raw_x))
+                    line_x = line.replace(ABS_MT_POSITION_X, str(raw_x))
                 elif 'ABS_MT_POSITION_Y' in line:
                     ABS_MT_POSITION_Y = line.split(
                         "ABS_MT_POSITION_Y")[-1].strip()
                     raw_y = (int(ABS_MT_POSITION_Y, 16) - ymin) * \
                         screen_height / (ymax - ymin)
-                    line = line.replace(ABS_MT_POSITION_Y, str(raw_y))
-                sys.stdout.write('[{}] {}'.format(i, line))
-                i += 1
+                    line_y = line.replace(ABS_MT_POSITION_Y, str(raw_y))
+                elif 'BTN_TOUCH' in line and 'DOWN' in line:
+                        print('='*100)
+                        sys.stdout.write(line_x)
+                        sys.stdout.write(line_y)
+                        sys.stdout.write(line)
+                elif 'BTN_TOUCH' in line and 'UP' in line:
+                        sys.stdout.write(line_x)
+                        sys.stdout.write(line_y)
+                        sys.stdout.write(line)
+#                 sys.stdout.write('[{}] {}'.format(i, line))
+#                 i += 1
         except KeyboardInterrupt as e:
             os.killpg(pipe.pid, signal.SIGINT)
         except TimeoutExpired as e:
