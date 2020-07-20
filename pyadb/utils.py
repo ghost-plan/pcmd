@@ -106,6 +106,7 @@ def capture_event(serial_no):
             i = 0
             for line in iter(lambda: pipe.stdout.readline(), ''):
                 if 'ABS_MT_POSITION_X' in line:
+                    print('='*100)
                     ABS_MT_POSITION_X = line.split(
                         "ABS_MT_POSITION_X")[-1].strip()
                     raw_x = (int(ABS_MT_POSITION_X, 16) - xmin) * \
@@ -120,10 +121,11 @@ def capture_event(serial_no):
                     line = line.replace(ABS_MT_POSITION_Y, str(raw_y))
                 sys.stdout.write('[{}] {}'.format(i, line))
                 i += 1
+        except KeyboardInterrupt as e:
+            os.killpg(pipe.pid, signal.SIGINT)
         except TimeoutExpired as e:
             os.killpg(pipe.pid, signal.SIGINT)
-            out_bytes = pipe.communicate()[0]
-            print('command error : \n%s' % (out_bytes))
+#             out_bytes = pipe.communicate()[0]
     # server_start(cmd,child_conn,queue)
     # client_start(parent_conn,queue)
 
