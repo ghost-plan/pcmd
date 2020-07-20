@@ -4,7 +4,7 @@ from pyadb.cmd import all_commands
 
 def create_pyadb():
     arguments = sys.argv[1:]
-    if arguments[0] is None:
+    if arguments is None or len(arguments) == 0:
         sys.stdout.write('error: arguments is empty\n')
         return
     cmds = all_commands()
