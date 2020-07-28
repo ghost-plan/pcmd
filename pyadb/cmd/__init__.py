@@ -7,6 +7,7 @@ import subprocess
 from importlib import import_module
 import sys
 from argparse import ArgumentParser
+from pyadb import log
 
 
 class BaseCommand(object):
@@ -31,11 +32,14 @@ class BaseCommand(object):
 
     def _create_parser(self, p) -> ArgumentParser:
         pass
-
-    def print_with_cmd(self, content):
-        s = 'b/{} s/{} cid/{}'.format(self._brand, self._serial_no,
-                                      self._app_client_code)
-        print('[{}:{}] >> {}'.format(self._subcmd_name, s, content))
+    
+    def print_with_cmd(self,*content):
+        s = ''
+        for i in content:
+            s = s+str(i)
+        brand = device.get_brand(self._serialNo)
+        device_info = 's/{} cid/{} b/{}'.format(self._serialNo, self._app_client_code,brand)
+        log.info('[ {} ] {} >> {}'.format(self._subcmd_name, device_info,s))
 
     def parse_args(self, parser, subparser, subcmd_name, arguments):
         subparser.set_defaults(func=self.__execute)
@@ -49,9 +53,13 @@ class BaseCommand(object):
             if device_size == 1:
                 serial_no = devices[0]
             elif device_size >= 2:
-                raise BaseException("有多台需要指定设备 {}".format(devices))
+#                 raise BaseException("有多台需要指定设备 {}".format(devices))
+                log.error("有多台需要指定设备 {}".format(devices))
+                sys.exit(1)
             else:
-                raise BaseException("没有设备连接")
+#                 raise BaseException("没有设备连接")
+                log.error("没有设备连接")
+                sys.exit(1)
 
         self._serial_no = serial_no
         self._app_client_code = self.get_app_client_code(serial_no)
@@ -60,7 +68,7 @@ class BaseCommand(object):
             pass
         self._brand = os.popen("adb -s " + self._serial_no +
                                "  shell getprop ro.product.brand").readlines()[0].strip()
-        self.print_with_cmd('parse_args {}'.format(args))
+#         self.print_with_cmd('parse_args {}'.format(args))
         self._parse_args(args)
         # start execute
         args.func()
@@ -77,7 +85,7 @@ class BaseCommand(object):
         return client_code
 
     def __execute(self):
-        self.print_with_cmd('execute')
+        self.print_with_cmd('execute doing')
         self._execute()
 
     def _execute(self):
