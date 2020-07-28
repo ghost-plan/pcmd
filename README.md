@@ -8,7 +8,7 @@ hi , pyadb
 usage: command line
 
 positional arguments:
-  {device-info}
+  {device-info,log-info}
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -36,6 +36,19 @@ optional arguments:
  [ =    ] heap size/m:512
 
 ```
+- padb log-info
+```bash
+Usage: crawler command line
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -s SERIALNO, --serial=SERIALNO
+                        use device with given serial
+  --tags=TAGS           tag
+  --format=FORMAT       format
+```
+[log-info](art/log-info.png)
 ## package source code
 - pip3 install setuptools  ; pip3 install wheel
 - python3 setup.py sdist bdist_wheel
