@@ -48,7 +48,7 @@ Options:
   --tags=TAGS           tag
   --format=FORMAT       format
 ```
-[log-info](art/log-info.png)
+![log-info](/art/log-info.png)
 ## package source code
 - pip3 install setuptools  ; pip3 install wheel
 - python3 setup.py sdist bdist_wheel
