@@ -1,6 +1,6 @@
 from cmd import BaseCommand
 import sys
-import log
+from pyadb import log
 class LogInfo(BaseCommand):
     def _optionParser(self, parser):
         parser.add_option(
