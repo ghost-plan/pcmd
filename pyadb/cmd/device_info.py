@@ -13,7 +13,7 @@ class DeviceInfo(BaseCommand):
         pyadb_parser = p.add_parser('device-info')
         pyadb_parser.add_argument('-b', '--basic', action='store_true',
                                   help='device basic info')
-        pyadb_parser.add_argument('-t', '--top_activity', action='store_true',
+        pyadb_parser.add_argument('--top_activity', action='store_true',
                                   help='top activity')
         pyadb_parser.add_argument(
             '-i', '--imei', action='store_true', help='get imei')

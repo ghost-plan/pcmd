@@ -1,19 +1,19 @@
-from cmd import BaseCommand
+from pyadb.cmd import BaseCommand
 import sys
 from pyadb import log
 class LogInfo(BaseCommand):
-    def _optionParser(self, parser):
-        parser.add_option(
+    def _create_parser(self, p):
+        pyadb_parser = p.add_parser('log-info')
+        pyadb_parser.add_argument(
             '--tags',
             dest="tags",
             action='append',
             default=[], 
             help="tag"
         )
-        parser.add_option(
+        pyadb_parser.add_argument(
             '--format',
             dest="format",
-            type='choice',
             choices=[
                 log.Format.NONE.name.lower(),
                 log.Format.BRIEF.name.lower(),
@@ -27,10 +27,11 @@ class LogInfo(BaseCommand):
             default=log.Format.NONE.name.lower(), 
             help="format"
         )
+        return pyadb_parser
 
-    def _parse_args(self, parser_options, arguments):
-        self.__tags = parser_options.tags
-        f  = parser_options.format
+    def _parse_args(self, args):
+        self.__tags = args.tags
+        f  = args.format
         for e in log.Format:
             if f == e.name.lower():
                 self.__format = e
@@ -38,3 +39,4 @@ class LogInfo(BaseCommand):
 
     def _execute(self):
         log.capture_log('a6426ab6',self.__tags,self.__format)
+        pass

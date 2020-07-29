@@ -18,7 +18,17 @@ optional arguments:
 
 ```
 
-- padb device-info -b
+- padb device-info
+```bash
+usage: command line device-info [-h] [-b] [--top_activity] [-i]
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -b, --basic     device basic info
+  --top_activity  top activity
+  -i, --imei      get imei
+```
+padb device-info -b
 ```bash
 [device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> parse_args Namespace(basic=True, func=<bound method BaseCommand.__execute of <pyadb.cmd.device_info.DeviceInfo object at 0x102d06f28>>, imei=False, serial_no='', top_activity=False)
 [device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> execute
@@ -38,15 +48,14 @@ optional arguments:
 ```
 - padb log-info
 ```bash
-Usage: crawler command line
+usage: command line log-info [-h] [--tags TAGS]
+                             [--format {none,brief,process,tag,raw,time,threadtime,long}]
 
-Options:
-  --version             show program's version number and exit
+optional arguments:
   -h, --help            show this help message and exit
-  -s SERIALNO, --serial=SERIALNO
-                        use device with given serial
-  --tags=TAGS           tag
-  --format=FORMAT       format
+  --tags TAGS           tag
+  --format {none,brief,process,tag,raw,time,threadtime,long}
+                        format
 ```
 ![log-info](/art/log-info.png)
 ## package source code

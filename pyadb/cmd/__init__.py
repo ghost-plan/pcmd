@@ -8,6 +8,7 @@ from importlib import import_module
 import sys
 from argparse import ArgumentParser
 from pyadb import log
+from pyadb import device
 
 
 class BaseCommand(object):
@@ -16,19 +17,26 @@ class BaseCommand(object):
     _serial_no = ''
     _app_client_code = ''
     _brand = ''
-    _subcmd_name = None
-
-    def create_parser(self):
+    @staticmethod
+    def create():
         parser = argparse.ArgumentParser(
-            usage="command line",
-            description=__doc__,
-        )
+                usage="command line",
+                description=__doc__,
+            )
         parser.add_argument('--version', action='version', version='1.0.0')
         parser.add_argument('-s', '--serial', dest='serial_no', default='',
-                            help='use device with given serial')
-        subparsers = parser.add_subparsers()
-        sp = self._create_parser(subparsers)
-        return parser, sp
+                                help='use device with given serial')
+        
+        sps = parser.add_subparsers()
+        return parser, sps
+    @staticmethod
+    def start(p):
+        args = p.parse_args()
+        args.func(args)
+
+    def create_parser(self,p,sp)-> ArgumentParser:
+       return self._create_parser(sp)
+
 
     def _create_parser(self, p) -> ArgumentParser:
         pass
@@ -37,18 +45,16 @@ class BaseCommand(object):
         s = ''
         for i in content:
             s = s+str(i)
-        brand = device.get_brand(self._serialNo)
-        device_info = 's/{} cid/{} b/{}'.format(self._serialNo, self._app_client_code,brand)
+        device_info = 's/{} cid/{} b/{}'.format(self._serial_no, self._app_client_code,self._brand)
         log.info('[ {} ] {} >> {}'.format(self._subcmd_name, device_info,s))
 
-    def parse_args(self, parser, subparser, subcmd_name, arguments):
-        subparser.set_defaults(func=self.__execute)
+    def parse_args(self,subparser, subcmd_name):
+        subparser.set_defaults(func=self.___parse_args)
         self._subcmd_name = subcmd_name
-        args = parser.parse_args()
-    #    self.print_with_cmd(arguments)
-        serial_no = args.serial_no.strip()
+    def ___parse_args(self, args):
+        serial_no= args.serial_no
         if len(serial_no) == 0:
-            devices = self.get_devices()
+            devices = device.get_devices()
             device_size = len(devices)
             if device_size == 1:
                 serial_no = devices[0]
@@ -62,27 +68,18 @@ class BaseCommand(object):
                 sys.exit(1)
 
         self._serial_no = serial_no
-        self._app_client_code = self.get_app_client_code(serial_no)
+        self._app_client_code = device.get_imei(serial_no)
         if len((self._app_client_code)) == 0:
-            sys.exit(0)
+            log.error('no devices')
+            sys.exit(1)
             pass
-        self._brand = os.popen("adb -s " + self._serial_no +
-                               "  shell getprop ro.product.brand").readlines()[0].strip()
-#         self.print_with_cmd('parse_args {}'.format(args))
+        self._brand = device.get_brand(self._serial_no)
         self._parse_args(args)
-        # start execute
-        args.func()
+        # self.print_with_cmd('parse_args {}'.format(args))
+        self.__execute()
 
     def _parse_args(self, args):
         pass
-
-    def get_app_client_code(self, serialNo):
-        ret = os.popen(
-            'adb -s {} shell service call iphonesubinfo 1'.format(serialNo)).readlines()
-        client_code = ''
-        for line in ret[1:]:
-            client_code += line.split("'")[1].replace('.', "").strip()
-        return client_code
 
     def __execute(self):
         self.print_with_cmd('execute doing')
@@ -90,22 +87,6 @@ class BaseCommand(object):
 
     def _execute(self):
         pass
-
-    def check_device(self, device):
-        if device in self.get_devices():
-            return True
-        else:
-            return False
-
-    def get_devices(self):
-        devices = []
-        ret = os.popen("adb devices").readlines()
-
-        for line in ret[1:]:
-            if (re.match(".*device$", line)):
-                devices.append(line.split("\t")[0])
-        return devices
-
 
 my_dir = os.path.dirname(__file__)
 

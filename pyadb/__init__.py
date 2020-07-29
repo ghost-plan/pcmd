@@ -1,5 +1,5 @@
 import sys
-from pyadb.cmd import all_commands
+from pyadb.cmd import all_commands,BaseCommand
 
 
 def create_pyadb():
@@ -8,7 +8,9 @@ def create_pyadb():
         sys.stdout.write('error: arguments is empty\n')
         return
     cmds = all_commands()
-
+    p,sps = BaseCommand.create()
     for (subcmd_name, subcmd) in cmds.items():
-        p, sp = subcmd.create_parser()
-        subcmd.parse_args(p, sp, subcmd_name, arguments)
+        sp = subcmd.create_parser(p,sps)
+        subcmd.parse_args(sp, subcmd_name)
+    BaseCommand.start(p)
+
