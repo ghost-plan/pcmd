@@ -1,5 +1,5 @@
 
-import device
+from pyadb import device
 from subprocess import Popen, PIPE, TimeoutExpired, run
 import subprocess
 import platform

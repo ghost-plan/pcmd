@@ -1,6 +1,6 @@
 from pyadb.cmd import BaseCommand
 import sys
-from pyadb import log
+from pyadb import log,event
 class LogInfo(BaseCommand):
     def _create_parser(self, p):
         pyadb_parser = p.add_parser('log-info')
@@ -27,6 +27,13 @@ class LogInfo(BaseCommand):
             default=log.Format.NONE.name.lower(), 
             help="format"
         )
+        pyadb_parser.add_argument(
+            '-e',
+            '--event',
+            action='store_true',
+            default=False, 
+            help="event"
+        )
         return pyadb_parser
 
     def _parse_args(self, args):
@@ -36,7 +43,10 @@ class LogInfo(BaseCommand):
             if f == e.name.lower():
                 self.__format = e
                 break
+        self.__event=args.event
 
     def _execute(self):
-        log.capture_log('a6426ab6',self.__tags,self.__format)
-        pass
+        if self.__tags and self.__format:
+            log.capture_log(self._serial_no,self.__tags,self.__format)
+        elif self.__event:
+            event.capture_event(self._serial_no)

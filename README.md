@@ -50,12 +50,14 @@ padb device-info -b
 ```bash
 usage: command line log-info [-h] [--tags TAGS]
                              [--format {none,brief,process,tag,raw,time,threadtime,long}]
+                             [-e]
 
 optional arguments:
   -h, --help            show this help message and exit
   --tags TAGS           tag
   --format {none,brief,process,tag,raw,time,threadtime,long}
                         format
+  -e, --event           event
 ```
 ![log-info](/art/log-info.png)
 ## package source code
