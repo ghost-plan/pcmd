@@ -14,7 +14,7 @@ class TempleCode(BaseCommand):
             '-i', '--imei', action='store_true', help='get imei')
         return pyadb_parser
 
-    def _parse_args(self, args):
+    def _parse_args(self, args: "ArgumentParser"):
         pass
 
     def _execute(self):
