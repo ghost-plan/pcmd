@@ -3,7 +3,6 @@ from subprocess import run, Popen, PIPE, TimeoutExpired
 import signal
 import os
 
-
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')
     if fn is None:
@@ -20,6 +19,7 @@ def __cmd_list(cmd, fn=None):
                 os.killpg(pipe.pid, signal.SIGINT)
 
 
+
 def switch_airplane(s):
     __cmd_list("adb -s " + s + "  shell am force-stop com.android.settings")
 
@@ -29,15 +29,27 @@ def switch_airplane(s):
     time.sleep(2)
     brand = os.popen(
         "adb -s " + s + "  shell getprop ro.product.brand").readlines()[0].strip()
-    if brand == "HUAWEI":
-        time.sleep(2)
-        __cmd_list("adb -s " + s + " shell input tap 1000 600")
-        time.sleep(2)
-        time.sleep(5)
-        __cmd_list("adb -s " + s + " shell input tap 1000 300")
-        time.sleep(20)
-        __cmd_list("adb -s " + s + " shell input tap 1000 300")
-        time.sleep(10)
+    model =  os.popen(
+        "adb -s " + s + "  shell getprop ro.product.model").readlines()[0].strip()
+    if brand == "HUAWEI" or brand == "HONOR":
+        if model == 'JAT-AL00':
+            time.sleep(2)
+            __cmd_list("adb -s " + s + " shell input tap 408.0 429.0")
+            time.sleep(2)
+            time.sleep(5)
+            __cmd_list("adb -s " + s + " shell input tap 627.0 189.0")
+            time.sleep(20)
+            __cmd_list("adb -s " + s + " shell input tap 627.0 189.0")
+            time.sleep(10)
+        else:
+            time.sleep(2)
+            __cmd_list("adb -s " + s + " shell input tap 1000 600")
+            time.sleep(2)
+            time.sleep(5)
+            __cmd_list("adb -s " + s + " shell input tap 1000 300")
+            time.sleep(20)
+            __cmd_list("adb -s " + s + " shell input tap 1000 300")
+            time.sleep(10)
     if brand == "xiaomi":
         time.sleep(2)
         __cmd_list("adb -s " + s + " shell input tap 1000 1500")
@@ -47,7 +59,7 @@ def switch_airplane(s):
         __cmd_list("adb -s " + s + " shell input tap 1000 300")
         time.sleep(10)
 
-    if brand == "OPPO":
+    if brand == "OPPO" or brand == 'Realme':
         time.sleep(5)
         __cmd_list("adb -s " + s + " shell input tap 1000 600")
         time.sleep(20)
