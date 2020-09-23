@@ -2,7 +2,7 @@ from pyadb.cmd import BaseCommand
 from pyadb.device import (
     get_model, get_brand, get_name,
     get_wm_size, get_wm_density, get_android_version,
-    get_imei, get_ip_and_mac, get_board,
+    get_imeis, get_ip_and_mac, get_board,
     get_abilist, get_cpu_core_size, get_heap_size,
 )
 from pyadb.utils import print_with_bar
@@ -31,7 +31,7 @@ class DeviceInfo(BaseCommand):
             print_with_bar(4, 'wm density:', get_wm_density(self._serial_no))
             print_with_bar(5, 'android version:',
                            get_android_version(self._serial_no))
-            print_with_bar(6, 'imei:', get_imei(self._serial_no))
+            print_with_bar(6, 'imei:', get_imeis(self._serial_no))
             print_with_bar(7, 'ip/mac:', get_ip_and_mac(self._serial_no))
             print_with_bar(8, 'board:', get_board(self._serial_no))
             print_with_bar(9, 'abilist:', get_abilist(self._serial_no))

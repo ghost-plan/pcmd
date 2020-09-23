@@ -160,6 +160,7 @@ def get_android_version(serial_no):
         serial_no, 'getprop ro.build.version.release')
     return ret[0].strip()
 
+
 '''
 IMEI由15位数字组成，其组成为：
 
@@ -171,15 +172,20 @@ IMEI由15位数字组成，其组成为：
 
 最后1位数（SP)通常是"0"，为检验码，目前暂备用。
 '''
-def __get_number(serial_no,ret):
+
+
+def __get_number(serial_no, ret):
     imei = ''
     for line in ret[1:]:
         imei += line.split("'")[1].replace('.', "").strip()
     return imei
+
+
 def __is_imei(value):
-    if value is None or len(value) !=15 :
+    if value is None or len(value) != 15:
         return False
     return True if value.startswith('8') else False
+
 
 @check_device
 # adb shell dumpsys iphonesubinfo
@@ -187,18 +193,21 @@ def get_imeis(serial_no):
     first = get_android_version(serial_no)
     sec = '4.4.3'
     if compare_version(first, sec) > 0:
-        imeis=set()
+        imeis = set()
         b = get_brand(serial_no)
-        if b =='HUAWEI' or b =='HONOR':
-            for i in range(0,20):
-                ret = adb_shell_cmd(serial_no, 'service call iphonesubinfo %s' % i)
-                n= __get_number(serial_no,ret)
+        if b == 'HUAWEI' or b == 'HONOR':
+            for i in range(0, 20):
+                ret = adb_shell_cmd(
+                    serial_no, 'service call iphonesubinfo %s' % i)
+                n = __get_number(serial_no, ret)
                 if __is_imei(n):
                     imeis.add(n)
-        elif b == 'Realme' or b =='OPPO' :
-            for i in range(1,3):
-                ret = adb_shell_cmd(serial_no, 'service call iphonesubinfo 3 i32 %s' % i)
-                n= __get_number(serial_no,ret)
+
+        elif b == 'Realme' or b == 'OPPO' or b == 'vivo':
+            for i in range(1, 3):
+                ret = adb_shell_cmd(
+                    serial_no, 'service call iphonesubinfo 3 i32 %s' % i)
+                n = __get_number(serial_no, ret)
                 if __is_imei(n):
                     imeis.add(n)
         return imeis
