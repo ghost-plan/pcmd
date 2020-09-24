@@ -4,23 +4,24 @@ import functools
 import os
 import re
 import sys
-from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen
+from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE
 import signal
 
 
 def adb_shell_cmd(serial_no, cmd_list, silent=False):
     if not silent:
         with os.popen('adb -s %s shell %s' % (serial_no, cmd_list)) as p:
-            return p.readlines()
+            res = p.read()
+            return res.split('\n') if res else ''
     else:
-        with Popen('adb -s %s shell %s' % (serial_no, cmd_list), stdout=DEVNULL, stderr=DEVNULL, shell=True,
+        with Popen('adb -s %s shell %s' % (serial_no, cmd_list), stdout=PIPE, stderr=PIPE, shell=True,
                    preexec_fn=os.setsid, encoding='utf-8') as pipe:
             try:
-                res = pipe.communicate()[0]
-                return res
+                res = pipe.stdout.read()
+                return res.split('\n') if res else ''
             except TimeoutExpired as e:
                 os.killpg(pipe.pid, signal.SIGINT)
-                out_bytes = pipe.communicate()[0]
+                out_bytes = pipe.stderr.read()
 
 
 def get_devices():
@@ -80,13 +81,14 @@ def get_name(serial_no):
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.name')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
-# adb shell wm size
-# Physical size: 1080x1920
-# Override size: 480x1024
-
 
 @check_device
 def get_wm_size(serial_no, is_override=False):
+    '''
+    # adb shell wm size
+    # Physical size: 1080x1920
+    # Override size: 480x1024
+    '''
     ret = adb_shell_cmd(serial_no, 'wm size')
     if ret is None or len(ret) == 0:
         return '', ''
@@ -119,7 +121,7 @@ def get_wm_displays(serial_no):
 # adb shell settings get secure android_id
 def get_android_id(serial_no):
     ret = adb_shell_cmd(serial_no, 'settings get secure android_id')
-    return ret[0].strip()
+    return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
 def compare(first: int, sec: int):
@@ -161,23 +163,24 @@ def get_android_version(serial_no):
     return ret[0].strip()
 
 
-'''
-IMEI由15位数字组成，其组成为：
-
-前6位数（TAC，TYPE APPROVAL CODE)是"型号核准号码"，一般代表机型
-
-接着的2位数（FAC-Final Assembly Code)是"最后装du配号"，一般代表产地
-
-之后的6位数（SNR)是"串号"，一般代表生产顺序号。
-
-最后1位数（SP)通常是"0"，为检验码，目前暂备用。
-'''
-
-
 def __get_number(serial_no, ret):
+    '''
+    IMEI由15位数字组成，其组成为：
+
+    前6位数（TAC，TYPE APPROVAL CODE)是"型号核准号码"，一般代表机型
+
+    接着的2位数（FAC-Final Assembly Code)是"最后装du配号"，一般代表产地
+
+    之后的6位数（SNR)是"串号"，一般代表生产顺序号。
+
+    最后1位数（SP)通常是"0"，为检验码，目前暂备用。
+    '''
     imei = ''
     for line in ret[1:]:
-        imei += line.split("'")[1].replace('.', "").strip()
+        if line is None or len(line) == 0:
+            continue
+        r = line.split("'")[1].replace('.', "").strip()
+        imei += r
     return imei
 
 
@@ -229,9 +232,14 @@ def get_ip_and_mac(serial_no):
                 r = e.split()
                 if '0.0.0.0/0' not in r and '127.0.0.1/8' not in r:
                     return r[-2], r[-1]
-                # if 'wlan0' in e:
-                # else
-    # print('ret', ret)
+
+    else:
+        ip = ret[0].strip().split(':')[1].strip()[0]
+        s: str = ret[0].strip()
+        start = s.index('inet addr:')+len('inet addr:')
+        end = start+11
+        ip = s[start:end]
+        return ip, ''
 
 
 @check_device
@@ -316,6 +324,7 @@ def main():
         print('name:"', get_name(d))
         print('wm size:', get_wm_size(d))
         print('wm density:', get_wm_density(d))
+        print('android id:', get_android_id(d))
         print('android version:', get_android_version(d))
         print('imei:', get_imeis(d))
         print('ip/mac:', get_ip_and_mac(d))
