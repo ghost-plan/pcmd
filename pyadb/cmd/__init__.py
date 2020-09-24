@@ -16,7 +16,7 @@ class BaseCommand(ABC):
     # _arg_parser = None
     # _subparsers = None
     _serial_no = ''
-    _app_client_code = ''
+    _imeis = ''
     _brand = ''
 
     @staticmethod
@@ -48,8 +48,8 @@ class BaseCommand(ABC):
         s = ''
         for i in content:
             s = s+str(i)
-        device_info = 's/{} cid/{} b/{}'.format(
-            self._serial_no, self._app_client_code, self._brand)
+        device_info = 's/{} imeis/{} b/{}'.format(
+            self._serial_no, self._imeis, self._brand)
         log.info('[ {} ] {} >> {}'.format(self._subcmd_name, device_info, s))
 
     def parse_args(self, subparser, subcmd_name):
@@ -73,8 +73,9 @@ class BaseCommand(ABC):
                 sys.exit(1)
 
         self._serial_no = serial_no
-        self._app_client_code = device.get_imei(serial_no)
-        if len((self._app_client_code)) == 0:
+        self._imeis = device.get_imeis(serial_no)
+        print(self._imeis)
+        if len(self._imeis) == 0:
             log.error('no devices')
             sys.exit(1)
             pass
