@@ -1,4 +1,3 @@
-import random
 from enum import Enum, unique
 import time
 import functools
@@ -70,15 +69,15 @@ def get_model(serial_no):
 
 
 @check_device
-# ro.product.brand
 def get_brand(serial_no):
+    # ro.product.brand
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.brand')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
 @check_device
-# ro.product.name
 def get_name(serial_no):
+    # ro.product.name
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.name')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
@@ -111,16 +110,16 @@ def get_wm_density(serial_no, is_override=False):
     return int(ret[line].split(':')[1].strip())
 
 
-# adb shell dumpsys window displays
 @check_device
 def get_wm_displays(serial_no):
+    # adb shell dumpsys window displays
     ret = adb_shell_cmd(serial_no, 'dumpsys window displays')
     # TODO:parser window displas
 
 
 @check_device
-# adb shell settings get secure android_id
 def get_android_id(serial_no):
+    # adb shell settings get secure android_id
     ret = adb_shell_cmd(serial_no, 'settings get secure android_id')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
@@ -165,17 +164,6 @@ def get_android_version(serial_no):
 
 
 def __get_number(serial_no, ret):
-    '''
-    IMEI由15位数字组成，其组成为：
-
-    前6位数（TAC，TYPE APPROVAL CODE)是"型号核准号码"，一般代表机型
-
-    接着的2位数（FAC-Final Assembly Code)是"最后装du配号"，一般代表产地
-
-    之后的6位数（SNR)是"串号"，一般代表生产顺序号。
-
-    最后1位数（SP)通常是"0"，为检验码，目前暂备用。
-    '''
     imei = ''
     for line in ret[1:]:
         if line is None or len(line) == 0:
@@ -192,14 +180,14 @@ def __is_imei(value):
 
 
 @check_device
-# adb shell dumpsys iphonesubinfo
 def get_imeis(serial_no):
+    # adb shell dumpsys iphonesubinfo
     first = get_android_version(serial_no)
     sec = '4.4.3'
     if compare_version(first, sec) > 0:
         imeis = set()
         b = get_brand(serial_no)
-        if b == 'HUAWEI' or b == 'HONOR':
+        if b == 'HUAWEI' or b == 'HONOR' or b == 'Xiaomi':
             for i in range(0, 20):
                 ret = adb_shell_cmd(
                     serial_no, 'service call iphonesubinfo %s' % i)
@@ -222,54 +210,8 @@ def get_imeis(serial_no):
         return imei
 
 
-macs = ['f8:e7:a0:8c:ed:a5', 'd8:9b:3b:6d:71:a5', 'd8:9b:3b:6d:72:c4', '88:f5:6e:06:6d:7a',
-        '70:3a:51:88:f3:91', '80:ad:16:5d:58:38', '24:79:f3:a5:ef:31', 'c0:2e:25:da:a4:8f']
-table = {'38e7a0': 'vivo/V1911A/PD1911', '2479f3': 'OPPO/PCAM10/PCAM10', '002e25': 'OPPO/PCGM00/PCGM00',
-         '389a78': 'HONOR/YAL-AL00/YAL-AL00', '189b3b': 'HUAWEI/POT-AL00a/POT-AL00a', '08f56e': 'HUAWEI/MAR-AL00/MAR-AL00',
-         '303a51': 'xiaomi/Redmi Note 7/lavender', '00ad16': 'xiaomi/MI 5X/tiffany'}
-
-
-def parse_mac(mac_bytes: bytes = None, mac_str: str = 0):
-    '''
-    MAC地址共48位（6个字节），以十六进制表示。第1Bit为广播地址(0)/群播地址(1)，第2Bit为广域地址(0)/区域地址(1)。前3~24位由IEEE决定如何分配给每一家制造商，且不重复，后24位由实际生产该网络设备的厂商自行指定且不重复。
-    vivo/V1911A/PD1911:f8:e7:a0:8c:ed:a5
-    vivo厂商：3-24位固定值：0x38E7A0
-    HONOR/YAL-AL00/AL-AL00:f8:9a:78:50:2f:7e
-    HONOR厂商：3-24位固定值:0x389a78
-    '''
-    mac = None
-    if mac_bytes:
-        mac = bytearray(mac_bytes)
-    elif mac_str:
-        mac = bytearray([int(e, base=16)
-                         for e in mac_str.strip().split(':')])
-    if mac is None:
-        return None
-
-    m3 = mac[:3]
-    first_bit = m3[0] >> 7
-    second_bit = (m3[0] >> 6) & 0b01
-    m3[0] &= 0b00111111
-    dom = m3.hex()
-    dom_name = table.get(dom)
-    m3_6 = mac[3:6]
-
-    return first_bit, second_bit, (dom_name, dom), m3_6.hex()
-
-
-def random_mac(origin: str):
-    m3 = origin.strip()[:8]
-    random_num4 = random.randint(0, 0xff)
-    random_num5 = random.randint(0, 0xff)
-    random_num6 = random.randint(0, 0xff)
-    mac = '%s:%02x:%02x:%02x' % (
-        m3, random_num4, random_num5, random_num6)
-    return mac
-
-
-@ check_device
+@check_device
 def get_ip_and_mac(serial_no):
-
     ret = adb_shell_cmd(serial_no, 'ifconfig | grep Mask', silent=True)
     if ret is None or len(ret) == 0:
         ret = adb_shell_cmd(serial_no, 'ifconfig  wlan0', silent=True)
@@ -291,14 +233,14 @@ def get_ip_and_mac(serial_no):
         return ip, ''
 
 
-@ check_device
+@check_device
 # ro.product.board
 def get_board(serial_no):
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.board')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
-@ check_device
+@check_device
 # ro.product.abilist
 def get_abilist(serial_no):
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.cpu.abilist')
@@ -317,9 +259,9 @@ def get_abilist(serial_no):
     return ret[0].strip().split(',') if ret and len(ret) > 0 else ''
 
 
-@ check_device
-# adb shell cat / proc/cpuinfo
+@check_device
 def get_cpu_core_size(serial_no):
+    # adb shell cat / proc/cpuinfo
     ret = adb_shell_cmd(serial_no, 'cat /proc/cpuinfo')
     for i in range(len(ret)-1, -1, -1):
         line = ret[i]
@@ -327,7 +269,7 @@ def get_cpu_core_size(serial_no):
             return int(line.split(':')[1])+1
 
 
-@ unique
+@unique
 class Unit(Enum):
     B = 1
     K = 1024
@@ -335,9 +277,9 @@ class Unit(Enum):
     G = 1024*M
 
 
-@ check_device
-# dalvik.vm.heapsize,unit m
+@check_device
 def get_heap_size(serial_no, unit=Unit.M):
+    # dalvik.vm.heapsize,unit m
     ret = adb_shell_cmd(serial_no, 'getprop dalvik.vm.heapsize')
     if len(ret) == 0:
         return ''
@@ -352,50 +294,48 @@ def get_heap_size(serial_no, unit=Unit.M):
         return ret/1024
 
 
-@ check_device
-# adb shell cat / proc/meminfo
-def get_men_info(serial_no):
+@check_device
+def get_mem_info(serial_no):
+    # adb shell cat / proc/meminfo
     # MemTotal 就是设备的总内存，MemFree 是当前空闲内存
     ret = adb_shell_cmd(serial_no, 'cat /proc/meminfo')
 
 
-@ check_device
-# adb shell dumpsys battery
+@check_device
 def get_battery_info(serial_no):
-    pass
+    # adb shell dumpsys battery
+    ret = adb_shell_cmd(serial_no, 'dumpsys battery')
+    level = ''
+    scale = ''
+
+    for line in ret:
+        if 'level' in line:
+            level = line.split(':')[1].strip()
+        elif 'scale' in line:
+            scale = line.split(':')[1].strip()
+    return '%s/%s' % (level, scale)
 
 
 def main():
     for d in get_devices():
-        # print('='*50)
-        # print('model:"', get_model(d))
-        # print('brand:"', get_brand(d))
-        # print('name:"', get_name(d))
-        # print('wm size:', get_wm_size(d))
-        # print('wm density:', get_wm_density(d))
-        # print('android id:', get_android_id(d))
-        # print('android version:', get_android_version(d))
-        # print('imei:', get_imeis(d))
-        # print('ip/mac:', get_ip_and_mac(d))
-        # print('board:"', get_board(d))
-        # print('abilist:"', get_abilist(d))
-        # print('cpu core size:', get_cpu_core_size(d))
-        # print('heap size/m:"', get_heap_size(d))
-        # print(parse_mac(mac_bytes=bytes(
-        #     [0xf8, 0x9a, 0x78, 0x50, 0x2f, 0x7e])))
-        # for m in macs:
-        #     print(parse_mac(mac_str=m))
-        for m in macs:
-            print(random_mac(m))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
-        # print(get_ip(d))
+        print('='*50)
+        print('serial_no:', d)
+        print('brand:', get_brand(d))
+        print('model:', get_model(d))
+        print('name:', get_name(d))
+        print('board:', get_board(d))
+        print('wm size:', get_wm_size(d))
+        print('wm density:', get_wm_density(d))
+        print('android version:', get_android_version(d))
+        print('heap size/m:', get_heap_size(d))
+        print('cpu core size:', get_cpu_core_size(d))
+        print('abilist:', get_abilist(d))
+        print('memory:', get_mem_info(d))
+
+        print('android id:', get_android_id(d))
+        print('imeis:', get_imeis(d))
+        print('ip/mac:', get_ip_and_mac(d))
+        print('battery:', get_battery_info(d))
 
 
 if __name__ == '__main__':
