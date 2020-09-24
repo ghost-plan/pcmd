@@ -221,8 +221,41 @@ def get_imeis(serial_no):
         return imei
 
 
+table = {'38e7a0': 'vivo', '389a78': 'HONOR'}
+
+
 @check_device
+def parse_mac(serial_no, mac_bytes: bytes = None, mac_str: str = 0):
+    '''
+    MAC地址共48位（6个字节），以十六进制表示。第1Bit为广播地址(0)/群播地址(1)，第2Bit为广域地址(0)/区域地址(1)。前3~24位由IEEE决定如何分配给每一家制造商，且不重复，后24位由实际生产该网络设备的厂商自行指定且不重复。
+    vivo/V1911A:f8:e7:a0:8c:ed:a5
+    vivo厂商：3-24位固定值：0x38E7A0
+    HONOR/YAL-AL00:f8:9a:78:50:2f:7e
+    HONOR厂商：3-24位固定值:0x389a78
+    '''
+    mac = None
+    if mac_bytes:
+        mac = bytearray(mac_bytes)
+    elif mac_str:
+        mac = bytearray([int(e, base=16)
+                         for e in mac_str.strip().split(':')])
+    if mac is None:
+        return None
+
+    m3 = mac[:3]
+    first_bit = m3[0] >> 7
+    second_bit = (m3[0] >> 6) & 0b01
+    m3[0] &= 0b00111111
+    dom = m3.hex()
+    dom_name = table[dom]
+    m3_6 = mac[3:6]
+
+    return first_bit, second_bit, (dom_name, dom), m3_6.hex()
+
+
+@ check_device
 def get_ip_and_mac(serial_no):
+
     ret = adb_shell_cmd(serial_no, 'ifconfig | grep Mask', silent=True)
     if ret is None or len(ret) == 0:
         ret = adb_shell_cmd(serial_no, 'ifconfig  wlan0', silent=True)
@@ -242,14 +275,14 @@ def get_ip_and_mac(serial_no):
         return ip, ''
 
 
-@check_device
+@ check_device
 # ro.product.board
 def get_board(serial_no):
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.board')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
-@check_device
+@ check_device
 # ro.product.abilist
 def get_abilist(serial_no):
     ret = adb_shell_cmd(serial_no, 'getprop ro.product.cpu.abilist')
@@ -278,7 +311,7 @@ def get_cpu_core_size(serial_no):
             return int(line.split(':')[1])+1
 
 
-@unique
+@ unique
 class Unit(Enum):
     B = 1
     K = 1024
@@ -332,6 +365,10 @@ def main():
         print('abilist:"', get_abilist(d))
         print('cpu core size:', get_cpu_core_size(d))
         print('heap size/m:"', get_heap_size(d))
+        print(parse_mac(d, mac_bytes=bytes(
+            [0xf8, 0x9a, 0x78, 0x50, 0x2f, 0x7e])))
+
+        print(parse_mac(d, mac_str='f8:e7:a0:8c:ed:a5'))
         # print(get_ip(d))
         # print(get_ip(d))
         # print(get_ip(d))
