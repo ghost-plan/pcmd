@@ -264,6 +264,8 @@ def get_ip_and_mac(serial_no):
             for e in ret:
                 r = e.split()
                 if '0.0.0.0/0' not in r and '127.0.0.1/8' not in r:
+                    if '0x' in r[-1]:
+                        return r[-2], ''
                     return r[-2], r[-1]
 
     else:
