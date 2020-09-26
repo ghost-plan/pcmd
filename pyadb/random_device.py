@@ -49,15 +49,17 @@ def random_mac(origin: str):
 
 def random_imei(origin: str):
     '''
-    IMEI由15位数字组成，其组成为：
+    [imei info](https://www.imei.info/)
+    [imei wiki](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity)
+    [imei ppt](https://www.gsma.com/latinamerica/wp-content/uploads/2018/06/GSMA-TAC-Allocation-and-IMEI-Training-Guide-Programming-Rules-v1.0.pdf)
+                AA	-	BB	BB	BB	-	CC	CC	CC	       D or EE
+    Old IMEI	TAC	            |FAC	Serial number	D = Check Digit (CD) (Optional)
+    New IMEI	TAC
+    Old IMEISV	TAC	            |FAC	                EE = Software Version Number (SVN)
+    New IMEISV	TAC
 
-    前6位数（TAC，TYPE APPROVAL CODE)是"型号核准号码"，一般代表机型
+    86-814403-947081-7
 
-    接着的2位数（FAC-Final Assembly Code)是"最后装du配号"，一般代表产地
-
-    之后的6位数（SNR)是"串号"，一般代表生产顺序号。
-
-    最后1位数（SP)通常是"0"，为检验码，目前暂备用。
     '''
     pass
 
