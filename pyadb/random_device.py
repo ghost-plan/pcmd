@@ -52,16 +52,77 @@ def random_imei(origin: str):
     [imei info](https://www.imei.info/)
     [imei wiki](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity)
     [imei ppt](https://www.gsma.com/latinamerica/wp-content/uploads/2018/06/GSMA-TAC-Allocation-and-IMEI-Training-Guide-Programming-Rules-v1.0.pdf)
+    [imei gsma](https://web.archive.org/web/20170911150130/https://www.gsma.com/newsroom/wp-content/uploads/2012/06/ts0660tacallocationprocessapproved.pdf)
+    [oppo check imei](https://www.oppo.com/cn/service/phonecheck)
+    [vivo check imei](https://www.vivo.com.cn/service/authenticityCheck/query)
                 AA	-	BB	BB	BB	-	CC	CC	CC	       D or EE
     Old IMEI	TAC	            |FAC	Serial number	D = Check Digit (CD) (Optional)
     New IMEI	TAC
     Old IMEISV	TAC	            |FAC	                EE = Software Version Number (SVN)
     New IMEISV	TAC
 
-    86-814403-947081-7
+    NNXXXX YY ZZZZZZ A
+    vivo/PD1911/V1911A
+    imeis: {'86-921104-303595-8', '86-921104-303594-1'}
+
+    OPPO/PCGM00/PCGM00
+    imei: {'86-974704-205025-8', '86-974704-205024-1'}
+    OPPO/PCGM00/PCGM00
+    imei: {'86-974704-204978-9', '86-974704-204979-7'}
+
+    OPPO/PCAM10/PCAM10
+    imei: {'86-292804-944520-7', '86-292804-944521-5'}
+    OPPO/PCAM10/PCAM10
+    imei: {'86-292804-944518-1', '86-292804-944519-9'}
+
+    HUAWEI/POT-AL00a/POT-AL00a
+    imei: {'86-862904-872932-8', '86-862904-870563-3'}
+
+    同一种model的设备，前8位(tac)是一样的,但是后6位(sn)却不能相同
+    不同的model，前8位(tac)不能相同
+
+    数字检查： Luhn algorithm
+    - Starting from the right, double every other digit (e.g., 7 → 14).
+    - Sum the digits (e.g., 14 → 1 + 4).
+    - Check if the sum is divisible by 10.
 
     '''
-    pass
+    def luhn_algorithm(seq: list) -> str:
+        ret = 0
+        for i in range(len(seq)-1, -1, -1):
+            if i % 2 == 0:
+                ret += seq[i]
+            else:
+                n = seq[i] * 2
+                if n >= 10:
+                    ret += (n//10 + n % 10)
+                else:
+                    ret += n
+
+        check_digist = (ret//10*10+10)-ret
+        return check_digist
+
+    def recursing(tac):
+        def random_sn():
+            r = '%s' % random.randint(100000, 999999)
+            sn = [int(r[i])
+                  for i in range(0, len(r))]
+            return sn
+        new_imei = list()
+        new_imei.extend(tac)
+        new_imei.extend(random_sn())
+        check_digist = luhn_algorithm(new_imei)
+        if check_digist != 0:
+            new_imei.append(check_digist)
+            return new_imei
+        return recursing(tac)
+    tac = [int(origin[i]) for i in range(0, len(origin))][:8]
+
+    new_imei = recursing(tac)
+    s = ''
+    for e in new_imei:
+        s += str(e)
+    return s
 
 
 def random_android_id(origin: str):
@@ -88,7 +149,10 @@ def main():
         print(parse_mac(mac_str=m))
     print('='*20)
     for m in macs:
-        print('origin:', m, 'new:', random_mac(m))
+        print('origin mac:', m, 'new:', random_mac(m))
+    # for m in imeis:
+    print('origin imei ', '869747042050258',
+          'new:', random_imei('869747042050258'))
 
 
 if __name__ == '__main__':
