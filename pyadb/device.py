@@ -316,6 +316,24 @@ def get_battery_info(serial_no):
     return '%s/%s' % (level, scale)
 
 
+@check_device
+def get_iccid(serial_no):
+    ret = adb_shell_cmd(
+        serial_no, 'service call iphonesubinfo %s' % 11)
+    n = __get_number(serial_no, ret)
+    return n
+
+
+@check_device
+def get_imsi(serial_no):
+    # adb shell service call iphonesubinfo 7 TelephonyManager.getSubscriberId()
+    i = 7
+    ret = adb_shell_cmd(
+        serial_no, 'service call iphonesubinfo %s' % i)
+    n = __get_number(serial_no, ret)
+    return n
+
+
 def main():
     for d in get_devices():
         print('='*50)
@@ -336,6 +354,8 @@ def main():
         print('imeis:', get_imeis(d))
         print('ip/mac:', get_ip_and_mac(d))
         print('battery:', get_battery_info(d))
+        print('iccid:', get_iccid(d))
+        print('imsi:', get_imsi(d))
 
 
 if __name__ == '__main__':

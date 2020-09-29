@@ -47,6 +47,36 @@ def random_mac(origin: str):
     return mac
 
 
+def luhn_algorithm(seq: list) -> str:
+    '''
+    [luhn](https://en.wikipedia.org/wiki/Luhn_algorithm)
+
+    数字检查： Luhn algorithm
+    - Starting from the right, double every other digit (e.g., 7 → 14).
+    - Sum the digits (e.g., 14 → 1 + 4).
+    - Check if the sum is divisible by 10.
+
+    '''
+    ret = 0
+    size = len(seq)
+    i = size-1
+    while i >= 0:
+        # first element
+        n = seq[i] * 2
+        if n >= 10:
+            ret += (n//10 + n % 10)
+        else:
+            ret += n
+        i -= 1
+        # second element
+        if 0 <= i <= size-1:
+            ret += seq[i]
+            i -= 1
+
+    check_digist = (ret//10*10+10)-ret
+    return check_digist
+
+
 def random_imei(origin: str):
     '''
     [imei info](https://www.imei.info/)
@@ -80,27 +110,7 @@ def random_imei(origin: str):
 
     同一种model的设备，前8位(tac)是一样的,但是后6位(sn)却不能相同
     不同的model，前8位(tac)不能相同
-
-    数字检查： Luhn algorithm
-    - Starting from the right, double every other digit (e.g., 7 → 14).
-    - Sum the digits (e.g., 14 → 1 + 4).
-    - Check if the sum is divisible by 10.
-
     '''
-    def luhn_algorithm(seq: list) -> str:
-        ret = 0
-        for i in range(len(seq)-1, -1, -1):
-            if i % 2 == 0:
-                ret += seq[i]
-            else:
-                n = seq[i] * 2
-                if n >= 10:
-                    ret += (n//10 + n % 10)
-                else:
-                    ret += n
-
-        check_digist = (ret//10*10+10)-ret
-        return check_digist
 
     def recursing(tac):
         def random_sn():
@@ -125,7 +135,66 @@ def random_imei(origin: str):
     return s
 
 
+def random_iccid(origin: str):
+    '''
+    [iccid](https://baike.baidu.com/item/iccid)
+    [check iccid](http://www.heicard.com/check_iccid)
+    898601-18-8-02-00504560-3
+    IIN(89-country calling code-MNC)
+    编制年后两位：18
+    中国联通固定位：8
+    省份：02
+    随机数：00504560
+    检验位数：3
+    '''
+    def recursing(fixed_number):
+        def random_sn():
+            r = '%s' % random.randint(0, 99999999)
+            sn = [int(r[i])
+                  for i in range(0, len(r))]
+            return sn
+        new_iccid = list()
+        new_iccid.extend(fixed_number)
+        new_iccid.extend(random_sn())
+        check_digist = luhn_algorithm(new_iccid)
+        if check_digist != 0:
+            new_iccid.append(check_digist)
+            return new_iccid
+        return recursing(fixed_number)
+    fixed_number = [int(origin[i]) for i in range(0, len(origin))][:11]
+    new_iccid = recursing(fixed_number)
+    # print(new_iccid)
+    s = ''
+    for e in new_iccid:
+        s += str(e)
+    return s
+
+
+def random_imsi(origin: str):
+    '''
+    [imsi](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity#:~:text=The%20international%20mobile%20subscriber%20identity,mobile%20device%20to%20the%20network.)
+    [imsi checker](https://www.numberingplans.com/index.php?page=analysis&sub=imsinr)
+    [imsi generator](https://www.jianshu.com/p/8bed10f409af)
+    [imsi](https://arib.or.jp/english/html/overview/doc/STD-T63V9_21/5_Appendix/Rel9/23/23003-980.pdf)
+    46001-5130533924
+    MSIN:51-3053-3924，E.123的CC（国家码）+NC（网络码）35988生成全球标题
+    '''
+    def random_sn():
+        return '%s' % random.randint(0, 9999)
+    # fixed_number = [int(origin[i]) for i in range(0, len(origin))][:-4]
+    fixed_number = origin[:-4]
+    sn = random_sn()
+    return fixed_number+sn
+
+
 def random_android_id(origin: str):
+    pass
+
+
+def random_serial_no(origin: str):
+    '''
+    a642-6ab6
+    '''
     pass
 
 
@@ -153,6 +222,12 @@ def main():
     # for m in imeis:
     print('origin imei ', '869747042050258',
           'new:', random_imei('869747042050258'))
+    print('origin iccid ', '89860118802005045603',
+          'new:', random_iccid('89860118802005045603'))
+    print('origin imsi ', '460015130533924',
+          'new:', random_imsi('460015130533924'))
+    print('origin serial no ', 'a6426ab6',
+          'new:', random_serial_no('a6426ab6'))
 
 
 if __name__ == '__main__':
