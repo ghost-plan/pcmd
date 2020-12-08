@@ -12,6 +12,7 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
+from pyadb.utils import is_macos
 
 __t_pool = ThreadPoolExecutor()
 
@@ -57,4 +58,12 @@ def open_app(serial_no, act):
     __cmd_list("adb -s "+serial_no + " shell am start -n {}".format(act))
 def process_list(serial_no,pkg_name):
     # adb  shell ps -ef |findstr "com.hawksjamesf" 
-    _cmd_list("adb -s "+serial_no + " shell ps -ef |grep '{}'".format(pkg_name))
+    if is_macos():
+        _cmd_list("adb -s "+serial_no + " shell ps -ef |grep '{}'".format(pkg_name))
+    else:
+        _cmd_list("adb -s "+serial_no + " shell ps -ef |findstr '{}'".format(pkg_name))
+def oomadj_list(serial_no,pid):
+    #proc/oom_adj
+    if is_macos():
+        pass
+        
