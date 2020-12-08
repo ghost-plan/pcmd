@@ -55,3 +55,6 @@ def running_services(serial_no, packagename):
 
 def open_app(serial_no, act):
     __cmd_list("adb -s "+serial_no + " shell am start -n {}".format(act))
+def process_list(serial_no,pkg_name):
+    # adb  shell ps -ef |findstr "com.hawksjamesf" 
+    _cmd_list("adb -s "+serial_no + " shell ps -ef |grep '{}'".format(pkg_name))
