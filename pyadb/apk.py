@@ -58,11 +58,12 @@ def open_app(serial_no, act):
     __cmd_list("adb -s "+serial_no + " shell am start -n {}".format(act))
 
 
+
 def is_macos():
     return "Darwin" in platform.system()
 
 
-def __process_list_interal(pipe, serial_no, pkg_name):
+def __process_list_interal(pipe, serial_no, app_uid):
     try:
         # for line in iter(lambda: pipe.stdout.readline(), ''):
         isFrist = True
@@ -71,7 +72,7 @@ def __process_list_interal(pipe, serial_no, pkg_name):
             line = pipe.stdout.readline()
 
             if line is None or len(line) == 0:
-                #print('end'+"="*20)
+                print('end'+"="*20)
                 break
             elif isFrist:
                 ret = line.split()
@@ -89,7 +90,7 @@ def __process_list_interal(pipe, serial_no, pkg_name):
                           c+' '+start_time+'   ' + tty+' '+time+'\t' + cmd)
                 isFrist = False
 
-            elif pkg_name in line:
+            elif app_uid in line:
                 # -f Full listing (-o USER:12=UID,PID,PPID,C,STIME,TTY,TIME,ARGS=CMD)
                 # -l Long listing (-o F,S,UID,PID,PPID,C,PRI,NI,ADDR,SZ,WCHAN,TTY,TIME,CMD)
                 ret = line.split()
@@ -118,12 +119,26 @@ def __process_list_interal(pipe, serial_no, pkg_name):
 
 def process_list(serial_no, pkg_name):
     # adb  shell ps -ef |findstr "com.hawksjamesf"
+
     if is_macos():
+        uid =os.popen('adb  -s '+serial_no+' shell dumpsys package '+pkg_name+' | grep userId= ').read().strip()
+        uid ='u0_a'+uid.split('=')[1][-3:]
         with Popen("adb -s "+serial_no + " shell ps - ef", stdout=PIPE, stderr=PIPE, shell=True,
                    preexec_fn=os.setsid, encoding='utf-8') as pipe:
-            __process_list_interal(pipe, serial_no, pkg_name)
+            __process_list_interal(pipe, serial_no, uid)
     else:
+        uid =os.popen('adb  -s '+serial_no+' shell dumpsys package '+pkg_name+'| findstr userId= ').read().strip()
+        uid ='u0_a'+uid.split('=')[1][-3:]
         with Popen("adb -s "+serial_no + " shell ps -ef", stdout=PIPE, stderr=PIPE, shell=True,
                    creationflags=CREATE_NEW_PROCESS_GROUP, encoding='utf-8') as pipe:
-            __process_list_interal(pipe, serial_no, pkg_name)
-        
+            __process_list_interal(pipe, serial_no, uid)
+
+
+if __name__ == "__main__":
+    # while True:
+    process_list('c4c81150', 'com.sankuai.meituan')
+    process_list('c4c81150', 'com.hawksjamesf.spacecraft.debug')
+    # time.sleep(1)
+
+
+
