@@ -1,18 +1,15 @@
 
 
 from subprocess import Popen, PIPE, TimeoutExpired, run
-import subprocess
 import platform
 import re
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from subprocess import TimeoutExpired, PIPE, Popen
 import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-from pyadb.utils import is_macos
 
 __t_pool = ThreadPoolExecutor()
 
