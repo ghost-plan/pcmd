@@ -13,13 +13,13 @@ setup(
         'flask',
     ],
 
-    author="hawksjamesf",
+    author="jamesfchen",
     author_email="hawksjamesf@gmail.com",
     description="pyadb tools",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",
-    url='https://hawksjamesf.github.io/pyadb/',
+    url='https://jamesfchen.github.io/pyadb/',
     # keywords="",
     # url='',
     classifiers=[
