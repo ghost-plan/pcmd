@@ -1,13 +1,7 @@
 from enum import Enum, unique
 import time
-import functools
-import os
-import re
-import sys
 from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE
-import signal
-
-
+import functools,os,sys,re,time
 def adb_shell_cmd(serial_no, cmd_list, silent=False):
     if not silent:
         with os.popen('adb -s %s shell %s' % (serial_no, cmd_list)) as p:
@@ -333,6 +327,60 @@ def get_imsi(serial_no):
     n = __get_number(serial_no, ret)
     return n
 
+@check_device
+def switch_airplane(s):
+    adb_shell_cmd(s,'am force-stop com.android.settings')
+
+    time.sleep(2)
+    adb_shell_cmd(s,  "am start com.android.settings")
+    adb_shell_cmd(s,"input tap 10 30")
+    time.sleep(2)
+    brand = os.popen("adb -s " + s +
+                     " shell getprop ro.product.brand").readlines()[0].strip()
+    model = os.popen("adb -s " + s +
+                     " shell getprop ro.product.model").readlines()[0].strip()
+    if brand == "HUAWEI" or brand == "HONOR":
+        if model == 'JAT-AL00':
+            time.sleep(2)
+            adb_shell_cmd(s,"input tap 408.0 429.0")
+            time.sleep(2)
+            time.sleep(5)
+            adb_shell_cmd(s,"input tap 627.0 189.0")
+            time.sleep(20)
+            adb_shell_cmd(s,"input tap 627.0 189.0")
+            time.sleep(10)
+        else:
+            time.sleep(2)
+            adb_shell_cmd(s,"input tap 1000 600")
+            time.sleep(2)
+            time.sleep(5)
+            adb_shell_cmd(s,"input tap 1000 300")
+            time.sleep(20)
+            adb_shell_cmd(s,"input tap 1000 300")
+            time.sleep(10)
+    if brand == "xiaomi":
+        time.sleep(2)
+        adb_shell_cmd(s,"input tap 1000 1500")
+        time.sleep(5)
+        adb_shell_cmd(s,"input tap 1000 300")
+        time.sleep(20)
+        adb_shell_cmd(s,"input tap 1000 300")
+        time.sleep(10)
+
+    if brand == "OPPO" or brand == 'Realme':
+        time.sleep(5)
+        adb_shell_cmd(s,"input tap 1000 600")
+        time.sleep(20)
+        adb_shell_cmd(s, "input tap 1000 600")
+        time.sleep(10)
+
+    if brand == "vivo":
+        time.sleep(5)
+        adb_shell_cmd(s,"input tap 1000 1200")
+        time.sleep(20)
+        adb_shell_cmd(s,"input tap 1000 1200")
+        time.sleep(10)
+
 
 def main():
     for d in get_devices():
@@ -356,7 +404,6 @@ def main():
         print('battery:', get_battery_info(d))
         print('iccid:', get_iccid(d))
         print('imsi:', get_imsi(d))
-
-
+        switch_airplane(d)
 if __name__ == '__main__':
     main()
