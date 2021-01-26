@@ -1,22 +1,22 @@
 from enum import Enum, unique
 import time
-from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE
+from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE, run
 import functools,os,sys,re,time
-def adb_shell_cmd(serial_no, cmd_list, silent=False):
-    if not silent:
-        with os.popen('adb -s %s shell %s' % (serial_no, cmd_list)) as p:
-            res = p.read()
-            return res.split('\n') if res else ''
-    else:
-        with Popen('adb -s %s shell %s' % (serial_no, cmd_list), stdout=PIPE, stderr=PIPE, shell=True,
-                   preexec_fn=os.setsid, encoding='utf-8') as pipe:
-            try:
-                res = pipe.stdout.read()
-                return res.split('\n') if res else ''
-            except TimeoutExpired as e:
-                os.killpg(pipe.pid, signal.SIGINT)
-                out_bytes = pipe.stderr.read()
 
+
+def __cmd_list(cmd_list):
+    completedProcess = run(cmd_list, shell=True, stdout=PIPE, stderr=PIPE)
+    returncode = completedProcess.returncode
+    if returncode == 0:
+        o = completedProcess.stdout.decode('utf-8').strip()
+        return o.split('\n') if o else o
+    else:
+        # return completedProcess.stderr.decode('utf-8').strip()
+        return ''
+
+
+def adb_shell_cmd(serial_no, cmd_list):
+    return __cmd_list('adb -s %s shell %s' % (serial_no, cmd_list))
 
 def get_devices():
     with os.popen("adb devices") as p:
@@ -206,9 +206,9 @@ def get_imeis(serial_no):
 
 @check_device
 def get_ip_and_mac(serial_no):
-    ret = adb_shell_cmd(serial_no, 'ifconfig | grep Mask', silent=True)
+    ret = adb_shell_cmd(serial_no, 'ifconfig | grep Mask')
     if ret is None or len(ret) == 0:
-        ret = adb_shell_cmd(serial_no, 'ifconfig  wlan0', silent=True)
+        ret = adb_shell_cmd(serial_no, 'ifconfig  wlan0')
         if ret is None or len(ret) == 0:
             ret = adb_shell_cmd(serial_no, 'netcfg')
             for e in ret:
