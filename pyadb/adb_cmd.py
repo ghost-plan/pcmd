@@ -3,7 +3,7 @@ import re
 import sys
 import os
 import functools
-from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE, run, TimeoutExpired
+from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE, run
 
 
 def __cmd_list(cmd_list):

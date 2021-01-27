@@ -1,6 +1,6 @@
 
 
-from subprocess import Popen, PIPE, TimeoutExpired, run
+from subprocess import TimeoutExpired, run
 import platform
 import re
 import os
@@ -10,7 +10,7 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-
+from pyadb import compat
 __t_pool = ThreadPoolExecutor()
 
 
@@ -19,8 +19,8 @@ def __cmd_list(cmd, fn=None):
     if fn is None:
         run(cmd, shell=True)
     else:
-        with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                   preexec_fn=os.setsid, encoding='utf-8') as pipe:
+
+        with compat.popen(cmd) as pipe:
             try:
                 res = pipe.communicate()[0]
                 fn(res)
@@ -120,15 +120,11 @@ def process_list(serial_no, pkg_name):
     if is_macos():
         uid =os.popen('adb  -s '+serial_no+' shell dumpsys package '+pkg_name+' | grep userId= ').read().strip()
         uid ='u0_a'+uid.split('=')[1][-3:]
-        with Popen("adb -s "+serial_no + " shell ps - ef", stdout=PIPE, stderr=PIPE, shell=True,
-                   preexec_fn=os.setsid, encoding='utf-8') as pipe:
-            __process_list_interal(pipe, serial_no, uid)
     else:
         uid =os.popen('adb  -s '+serial_no+' shell dumpsys package '+pkg_name+'| findstr userId= ').read().strip()
         uid ='u0_a'+uid.split('=')[1][-3:]
-        with Popen("adb -s "+serial_no + " shell ps -ef", stdout=PIPE, stderr=PIPE, shell=True,
-                   creationflags=CREATE_NEW_PROCESS_GROUP, encoding='utf-8') as pipe:
-            __process_list_interal(pipe, serial_no, uid)
+    with compat.popen("adb -s "+serial_no + " shell ps - ef") as pipe:
+        __process_list_interal(pipe, serial_no, uid)
 
 
 if __name__ == "__main__":

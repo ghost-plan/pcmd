@@ -1,28 +1,27 @@
 
 from pyadb import device
-from subprocess import Popen, PIPE, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired, run
 import subprocess
 import platform
 import re
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from subprocess import TimeoutExpired, PIPE, Popen
 import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-
+from pyadb import compat
 __t_pool = ThreadPoolExecutor()
 
-
+def __is_macos():
+    return True if "Darwin" in platform.system() else False
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')
     if fn is None:
         run(cmd, shell=True)
     else:
-        with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                   preexec_fn=os.setsid, encoding='utf-8') as pipe:
+        with compat.popen(cmd) as pipe:
             try:
                 res = pipe.communicate()[0]
                 fn(res)
@@ -88,6 +87,44 @@ def input_swipe_cmd(serial_no, *args):
     __input_cmd(serial_no, 'swipe', *args)
 
 
+def _capture_event(pipe, screen_width, screen_height, xmin, xmax, ymin, ymax):
+    try:
+        # i = 0
+        line_y = ''
+        line_x = ''
+        for line in iter(lambda: pipe.stdout.readline(), ''):
+            if 'ABS_MT_POSITION_X' in line:
+                ABS_MT_POSITION_X = line.split(
+                    "ABS_MT_POSITION_X")[-1].strip()
+                raw_x = (int(ABS_MT_POSITION_X, 16) - xmin) * \
+                    screen_width / (xmax - xmin)
+                # print(ABS_MT_POSITION_X,int(ABS_MT_POSITION_X,16),raw_x)
+                line_x = line.replace(ABS_MT_POSITION_X, str(raw_x))
+                line = line.replace(ABS_MT_POSITION_X, str(raw_x))
+            elif 'ABS_MT_POSITION_Y' in line:
+                ABS_MT_POSITION_Y = line.split(
+                    "ABS_MT_POSITION_Y")[-1].strip()
+                raw_y = (int(ABS_MT_POSITION_Y, 16) - ymin) * \
+                    screen_height / (ymax - ymin)
+                line_y = line.replace(ABS_MT_POSITION_Y, str(raw_y))
+                line = line.replace(ABS_MT_POSITION_Y, str(raw_y))
+            elif 'BTN_TOUCH' in line and 'DOWN' in line:
+                print('='*100)
+                sys.stdout.write(line_x)
+                sys.stdout.write(line_y)
+                sys.stdout.write(line)
+            elif 'BTN_TOUCH' in line and 'UP' in line:
+                sys.stdout.write(line_x)
+                sys.stdout.write(line_y)
+                sys.stdout.write(line)
+                pass
+            # sys.stdout.write('[{}] {}'.format(i, line))
+            # i += 1
+    except KeyboardInterrupt as e:
+        os.killpg(pipe.pid, signal.SIGINT)
+    except TimeoutExpired as e:
+        os.killpg(pipe.pid, signal.SIGINT)
+        # out_bytes = pipe.communicate()[0]
 def capture_event(serial_no):
     cmd = 'adb -s {}  shell getevent -lp'.format(serial_no)
     ret = os.popen(cmd).readlines()
@@ -119,47 +156,9 @@ def capture_event(serial_no):
     # print(xmin, xmax, ymin, ymax, screen_width, screen_height)
     # 360.3336422613531,1997.8537836682342
     cmd = 'adb -s {}  shell getevent -tl'.format(serial_no)
-    with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-               preexec_fn=os.setsid, encoding='utf-8') as pipe:
-        try:
-            # i = 0
-            line_y = ''
-            line_x = ''
-            for line in iter(lambda: pipe.stdout.readline(), ''):
-                if 'ABS_MT_POSITION_X' in line:
-                    ABS_MT_POSITION_X = line.split(
-                        "ABS_MT_POSITION_X")[-1].strip()
-                    raw_x = (int(ABS_MT_POSITION_X, 16) - xmin) * \
-                        screen_width / (xmax - xmin)
-                    # print(ABS_MT_POSITION_X,int(ABS_MT_POSITION_X,16),raw_x)
-                    line_x = line.replace(ABS_MT_POSITION_X, str(raw_x))
-                    line = line.replace(ABS_MT_POSITION_X, str(raw_x))
-                elif 'ABS_MT_POSITION_Y' in line:
-                    ABS_MT_POSITION_Y = line.split(
-                        "ABS_MT_POSITION_Y")[-1].strip()
-                    raw_y = (int(ABS_MT_POSITION_Y, 16) - ymin) * \
-                        screen_height / (ymax - ymin)
-                    line_y = line.replace(ABS_MT_POSITION_Y, str(raw_y))
-                    line = line.replace(ABS_MT_POSITION_Y, str(raw_y))
-                elif 'BTN_TOUCH' in line and 'DOWN' in line:
-                    print('='*100)
-                    sys.stdout.write(line_x)
-                    sys.stdout.write(line_y)
-                    sys.stdout.write(line)
-                elif 'BTN_TOUCH' in line and 'UP' in line:
-                    sys.stdout.write(line_x)
-                    sys.stdout.write(line_y)
-                    sys.stdout.write(line)
-                    pass
-                # sys.stdout.write('[{}] {}'.format(i, line))
-                # i += 1
-        except KeyboardInterrupt as e:
-            os.killpg(pipe.pid, signal.SIGINT)
-        except TimeoutExpired as e:
-            os.killpg(pipe.pid, signal.SIGINT)
-            # out_bytes = pipe.communicate()[0]
-    # server_start(cmd,child_conn,queue)
-    # client_start(parent_conn,queue)
+    with compat.popen(cmd) as pipe:
+        _capture_event(pipe, screen_width, screen_height,
+                       xmin, xmax, ymin, ymax)
 
 def main():
     d = device.get_devices()[0]

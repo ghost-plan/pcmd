@@ -1,7 +1,8 @@
-from subprocess import Popen, PIPE, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired, run
 import os,signal
 from enum import Enum, unique
 import sys
+from pyadb import compat
 ANSI_RED = "\u001B[31m"
 ANSI_YELLOW = "\u001B[33m"
 ANSI_GREEN = "\u001B[32m"
@@ -94,8 +95,7 @@ def capture_log(serial_no,tags,format=Format.NONE):
         cmd = 'adb -s %s  shell logcat' % (serial_no)
     if format != Format.NONE:
         cmd = cmd + ' -v %s' % format.name.lower()
-    with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-               preexec_fn=os.setsid, encoding='utf-8') as pipe:
+    with compat.popen(cmd) as pipe:
         try:
             # for line in iter(lambda: pipe.stdout.readline(), ''):
             while True:

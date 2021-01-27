@@ -1,6 +1,6 @@
 from enum import Enum, unique
 import time
-from subprocess import TimeoutExpired, PIPE, DEVNULL, Popen, STDOUT, PIPE, run
+from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE, run
 import functools,os,sys,re,time
 from pyadb import log
 

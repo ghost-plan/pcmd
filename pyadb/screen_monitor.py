@@ -1,26 +1,23 @@
 
 
-from subprocess import Popen, PIPE, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired, run
 import subprocess
 import platform
 import re
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from subprocess import TimeoutExpired, PIPE, Popen
 import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-
-
+from pyadb import compat
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')
     if fn is None:
         run(cmd, shell=True)
     else:
-        with Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                   preexec_fn=os.setsid, encoding='utf-8') as pipe:
+        with compat.popen(cmd) as pipe:
             try:
                 res = pipe.communicate()[0]
                 fn(res)
