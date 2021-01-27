@@ -2,7 +2,7 @@ import platform,os
 import subprocess
 from subprocess import Popen, PIPE
 def __is_macos():
-    return True if "Darwin" in platform.system() else False
+    return "Darwin" in platform.system()
 
 
 def popen(cmd):

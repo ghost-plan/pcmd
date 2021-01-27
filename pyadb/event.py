@@ -13,9 +13,6 @@ from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
 from pyadb import compat
 __t_pool = ThreadPoolExecutor()
-
-def __is_macos():
-    return True if "Darwin" in platform.system() else False
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')
     if fn is None:

@@ -56,7 +56,7 @@ def open_app(serial_no, act):
 
 
 
-def is_macos():
+def __is_macos():
     return "Darwin" in platform.system()
 
 
@@ -117,7 +117,7 @@ def __process_list_interal(pipe, serial_no, app_uid):
 def process_list(serial_no, pkg_name):
     # adb  shell ps -ef |findstr "com.hawksjamesf"
 
-    if is_macos():
+    if __is_macos():
         uid =os.popen('adb  -s '+serial_no+' shell dumpsys package '+pkg_name+' | grep userId= ').read().strip()
         uid ='u0_a'+uid.split('=')[1][-3:]
     else:
