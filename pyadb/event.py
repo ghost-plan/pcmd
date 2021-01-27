@@ -161,63 +161,6 @@ def capture_event(serial_no):
     # server_start(cmd,child_conn,queue)
     # client_start(parent_conn,queue)
 
-
-switch_to_queue = False
-parent_conn, child_conn = Pipe()
-queue = Queue()
-address = ('localhost', 6000)
-family = 'AF_UNIX'
-
-
-def server_start(cmd, child_conn=None, queue=None):
-    def task(conn):
-        print('server side start')
-        # if switch_to_queue and queue:
-        #     for i in range(0,10):
-        #         queue.put('[queue] coming from server side')
-        #         time.sleep(1)
-        # elif conn:
-        #     for i in range(0,10):
-        #         conn.send('[pip] coming from server side...{}'.format(i))
-        #         time.sleep(0.3)
-        #     conn.send('exit')
-
-        with Client(address) as client:
-            for i in range(0, 10):
-                client.send('push {} msg to client '.format(i))
-
-    p = Process(target=task, args=(child_conn,))
-    p.start()
-    # p.join()
-    # with ProcessPoolExecutor() as proc_exe:
-    #     proc_exe.submit(task)
-
-
-def client_start(conn=None, queue=None):
-    print('client side start')
-    result = None
-    # while True:
-    #     if switch_to_queue and queue:
-    #         result = queue.get()
-    #     elif conn:
-    #         result = conn.recv()
-    #         print('result:',result)
-    #         if 'exit' in result:
-    #             break
-
-    with Listener(address) as listener:
-        with listener.accept() as conn:
-            while True:
-                try:
-                    ret = conn.recv()
-                except EOFError as e:
-                    print('error:', e.__cause__)
-                    break
-                else:
-                    print('result:', ret)
-    print('client side end')
-
-
 def main():
     d = device.get_devices()[0]
     # capture_event(device.get_devices()[0])
