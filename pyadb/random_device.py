@@ -92,6 +92,8 @@ def random_imei(origin: str):
     New IMEISV	TAC
 
     NNXXXX YY ZZZZZZ A
+    
+    brand/model/name
     vivo/PD1911/V1911A
     imeis: {'86-921104-303595-8', '86-921104-303594-1'}
 
@@ -107,7 +109,14 @@ def random_imei(origin: str):
 
     HUAWEI/POT-AL00a/POT-AL00a
     imei: {'86-862904-872932-8', '86-862904-870563-3'}
-
+    
+    HONOR/yal-al00/yal-al00
+    imei: {'86-280204-119961-9', '86-280204-123597-5'}
+    HONOR/LRA-AL00/LRA-AL00
+    imei: {'86-509804-351349-6', '86-509804-378279-4'}
+    
+    xiaomi/redmi note 7/lavender
+    imei: {'86-716504-448430-4', '86-716504-548430-3'}
     同一种model的设备，前8位(tac)是一样的,但是后6位(sn)却不能相同
     不同的model，前8位(tac)不能相同
     '''
