@@ -2,6 +2,7 @@ from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
 import socket
 import time
+import os
 #=====================================pip and queue===============================================================
 switch_to_queue = False
 parent_conn, child_conn = Pipe()
@@ -109,7 +110,7 @@ def read_all_content(target_socket):
 def adb_client_start():
     """ create socket and connect to adb server https://android.googlesource.com/platform/system/core/+/jb-dev/adb/SERVICES.TXT"""
     with socket.socket() as skt:
-        skt.connect((HOST, PORT)) 
+        skt.connect((HOST, PORT))
         while True:
             try:
                 ready_data = encode_data('host:devices')
@@ -135,6 +136,114 @@ def adb_client_start():
                 print('BaseException:', e)
                 skt.close()
                 break
+'''
+networking:
+ connect HOST[:PORT]      connect to a device via TCP/IP [default port=5555]
+ disconnect [HOST[:PORT]]
+     disconnect from given TCP/IP device [default port=5555], or all
+ pair HOST[:PORT] [PAIRING CODE]
+     pair with a device for secure TCP/IP communication
+ forward --list           list all forward socket connections
+ forward [--no-rebind] LOCAL REMOTE
+     forward socket connection using:
+       tcp:<port> (<local> may be "tcp:0" to pick any open port)
+       localabstract:<unix domain socket name>
+       localreserved:<unix domain socket name>
+       localfilesystem:<unix domain socket name>
+       dev:<character device name>
+       jdwp:<process pid> (remote only)
+       acceptfd:<fd> (listen only)
+ forward --remove LOCAL   remove specific forward socket connection
+ forward --remove-all     remove all forward socket connections
+ ppp TTY [PARAMETER...]   run PPP over USB
+ reverse --list           list all reverse socket connections from device
+ reverse [--no-rebind] REMOTE LOCAL
+     reverse socket connection using:
+       tcp:<port> (<remote> may be "tcp:0" to pick any open port)
+       localabstract:<unix domain socket name>
+       localreserved:<unix domain socket name>
+       localfilesystem:<unix domain socket name>
+ reverse --remove REMOTE  remove specific reverse socket connection
+ reverse --remove-all     remove all reverse socket connections from device
+ mdns check               check if mdns discovery is available
+ mdns services            list all discovered services
+'''
+class AdbServer():
+    '''
+    adb reverse  localabstract:river tcp:27184
+    '''
+    def __init__(self) -> None:
+        super().__init__()
+
+class AdbClient():
+    '''
+    adb forward localabstract
+    connect --> select_service('host:transport:device’) -> select_service('localabstract:bbb’)
+    '''
+    def __init__(self) -> None:
+        super().__init__()
+
+    def connect_to_device(self,device=None, port=5037):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(('127.0.0.1', port))
+        self.sock = sock
+
+        try:
+            if device is None:
+                self.select_service('host:transport-any')
+            else:
+                self.select_service('host:transport:%s' % (device))
+
+        except SelectServiceError as e:
+            raise HumanReadableError(
+                'Failure to target device %s: %s' % (device, e.reason))
+
+    def select_service(self, service):
+        message = '%04x%s' % (len(service), service)
+        self.sock.send(message.encode('ascii'))
+        status = read_input(self.sock, 4, "status")
+        if status == b'OKAY':
+            # All good...
+            pass
+        elif status == b'FAIL':
+            reason_len = int(read_input(self.sock, 4, "fail reason"), 16)
+            reason = read_input(self.sock, reason_len, "fail reason lean").decode('ascii')
+            raise SelectServiceError(reason)
+        else:
+            raise Exception('Unrecognized status=%s' % (status))
+def get_adb_server_port_from_server_socket():
+  socket_spec = os.environ.get('ADB_SERVER_SOCKET')
+  if not socket_spec:
+      return None
+  if not socket_spec.startswith('tcp:'):
+    raise HumanReadableError(
+      'Invalid or unsupported socket spec \'%s\' specified in ADB_SERVER_SOCKET.' % (
+        socket_spec))
+  return socket_spec.split(':')[-1]
+def get_adb_server_port():
+  defaultPort = 5037
+  portStr = get_adb_server_port_from_server_socket() or os.environ.get('ANDROID_ADB_SERVER_PORT')
+  if portStr is None:
+    return defaultPort
+  elif portStr.isdigit():
+    return int(portStr)
+  else:
+    raise HumanReadableError(
+      'Invalid integer \'%s\' specified in ANDROID_ADB_SERVER_PORT or ADB_SERVER_SOCKET.' % (
+        portStr))
+class SelectServiceError(Exception):
+  def __init__(self, reason):
+    self.reason = reason
+
+  def __str__(self):
+    return repr(self.reason)
+
+class HumanReadableError(Exception):
+  def __init__(self, reason):
+    self.reason = reason
+
+  def __str__(self):
+    return self.reason
 
 
 def main():
@@ -142,7 +251,8 @@ def main():
     # client_start(parent_conn, queue)
     # socket_client_start()
     # socket_server_start()
-    adb_client_start()
+    # adb_client_start()
+
 
 
 
