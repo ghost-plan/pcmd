@@ -2,7 +2,7 @@ from enum import Enum, unique
 import time
 from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE, run
 import functools,os,sys,re,time
-from pyadb import log
+# from pyadb import log
 
 def __adb_shell_cmd(serial_no, cmd):
     completedProcess = run('adb -s %s shell %s' %
@@ -13,7 +13,7 @@ def __adb_shell_cmd(serial_no, cmd):
         return ret.split('\n') if ret else ''
     else:
         # sys.stdout.write()
-        log.error(completedProcess.stderr.decode('utf-8').strip())
+        # log.error(completedProcess.stderr.decode('utf-8').strip())
         return ''
 
 def get_devices():
@@ -231,7 +231,33 @@ def get_board(serial_no):
     ret = __adb_shell_cmd(serial_no, 'getprop ro.product.board')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
+#========================================cpu start=================================================================================
+'''
+下面两个指标体现cpu性能
+// 获取 CPU 核心数
+cat /sys/devices/system/cpu/possible  
 
+// 获取某个 CPU 的频率
+cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
+
+下面指标体现cpu使用率
+
+proc/self/stat:
+  utime:       用户时间，反应用户代码执行的耗时  
+  stime:       系统时间，反应系统调用执行的耗时
+  majorFaults：需要硬盘拷贝的缺页次数
+  minorFaults：无需硬盘拷贝的缺页次数
+
+下面指标体现cpu饱和度
+
+proc/self/sched:
+  nr_voluntary_switches：     
+  主动上下文切换次数，因为线程无法获取所需资源导致上下文切换，最普遍的是IO。    
+  nr_involuntary_switches：   
+  被动上下文切换次数，线程被系统强制调度导致上下文切换，例如大量线程在抢占CPU。
+  se.statistics.iowait_count：IO 等待的次数
+  se.statistics.iowait_sum：  IO 等待的时间
+'''
 @check_device
 # ro.product.abilist
 def get_abilist(serial_no):
@@ -253,14 +279,35 @@ def get_abilist(serial_no):
 
 @check_device
 def get_cpu_core_size(serial_no):
+    '''
+    ['Processor\t: AArch64 Processor rev 4 (aarch64)\r', 'processor\t: 0\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 1\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 2\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 3\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 4\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 5\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 6\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 
+0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 7\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'Hardware\t: Hisilicon Kirin710']
+    '''
     # adb shell cat / proc/cpuinfo
     ret = __adb_shell_cmd(serial_no, 'cat /proc/cpuinfo')
     for i in range(len(ret)-1, -1, -1):
         line = ret[i]
         if re.match("^processor*", line):
             return int(line.split(':')[1])+1
+    
+#========================================cpu end=================================================================================
 
 
+
+#========================================process start=================================================================================
+    '''
+    /proc/[pid]/stat             // 进程CPU使用情况
+    /proc/[pid]/task/[tid]/stat  // 进程下面各个线程的CPU使用情况
+    /proc/[pid]/sched            // 进程CPU调度相关
+    /proc/loadavg                // 系统平均负载，uptime命令对应文件
+    '''
+
+
+
+
+
+
+#========================================process end=================================================================================
 @unique
 class Unit(Enum):
     B = 1
@@ -288,9 +335,15 @@ def get_heap_size(serial_no, unit=Unit.M):
 
 @check_device
 def get_mem_info(serial_no):
+    '''
+    ['MemTotal:        3768292 kB\r', 'MemFree:           82008 kB\r', 'MemAvailable:    1763668 kB\r', 'Buffers:            4780 kB\r', 'Cached:          1671212 kB\r', 'SwapCached:       136492 kB\r', 'Active:  
+        1701080 kB\r', 'Inactive:        1148344 kB\r', 'Active(anon):     818020 kB\r', 'Inactive(anon):   365260 kB\r', 'Active(file):     883060 kB\r', 'Inactive(file):   783084 kB\r', 'Unevictable:        
+2296 kB\r', 'Mlocked:            2296 kB\r', 'SwapTotal:       2293756 kB\r', 'SwapFree:        1703164 kB\r', 'Dirty:               212 kB\r', 'Writeback:             0 kB\r', 'AnonPages:       1163972 kB\r', 'Mapped:           404768 kB\r', 'Shmem:              9744 kB\r', 'Slab:             258684 kB\r', 'SReclaimable:      91428 kB\r', 'SUnreclaim:       167256 kB\r', 'KernelStack:       53440 kB\r', 'PageTables:        78428 kB\r', 'NFS_Unstable:          0 kB\r', 'Bounce:                0 kB\r', 'WritebackTmp:          0 kB\r', 'CommitLimit:     4177900 kB\r', 'Committed_AS:   93899432 kB\r', 'VmallocTotal:   263061440 kB\r', 'VmallocUsed:           0 kB\r', 'VmallocChunk:          0 kB\r', 'CmaTotal:         262144 kB\r', 'CmaFree:             192 kB\r', 'IonTotalCache:         0 kB\r', 'IonTotalUsed:      74420 kB\r', 'RsvTotalUsed:     276484 kB']
+    '''
     # adb shell cat / proc/meminfo
     # MemTotal 就是设备的总内存，MemFree 是当前空闲内存
     ret = __adb_shell_cmd(serial_no, 'cat /proc/meminfo')
+   
 
 
 @check_device
@@ -483,6 +536,6 @@ def main():
         print('battery:', get_battery_info(d))
         print('iccid:', get_iccid(d))
         print('imsi:', get_imsi(d))
-        switch_airplane(d)
+        # switch_airplane(d)
 if __name__ == '__main__':
     main()
