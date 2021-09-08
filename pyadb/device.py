@@ -240,7 +240,7 @@ cat /sys/devices/system/cpu/possible
 // 获取某个 CPU 的频率
 cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
 
-下面指标体现cpu使用率
+下面指标体现cpu使用率（反应了cpu在某个进程中的使用情况）
 
 proc/self/stat:
   utime:       用户时间，反应用户代码执行的耗时  
@@ -248,7 +248,7 @@ proc/self/stat:
   majorFaults：需要硬盘拷贝的缺页次数
   minorFaults：无需硬盘拷贝的缺页次数
 
-下面指标体现cpu饱和度
+下面指标体现cpu饱和度（反应了线程排队等待cpu情况）
 
 proc/self/sched:
   nr_voluntary_switches：     
