@@ -2,7 +2,7 @@ from subprocess import PIPE, TimeoutExpired, run
 import os,signal
 from enum import Enum, unique
 import sys
-from pyadb import compat
+from fwk import compat
 ANSI_RED = "\u001B[31m"
 ANSI_YELLOW = "\u001B[33m"
 ANSI_GREEN = "\u001B[32m"

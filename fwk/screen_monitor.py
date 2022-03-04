@@ -11,7 +11,7 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-from pyadb import compat
+from fwk import compat
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')
     if fn is None:

@@ -1,6 +1,6 @@
-from pyadb.cmd import BaseCommand
+from fwk import BaseCommand
 import sys
-from pyadb import log,event
+from fwk import log,event
 class LogInfo(BaseCommand):
     def _create_parser(self, p):
         pyadb_parser = p.add_parser('log-info')

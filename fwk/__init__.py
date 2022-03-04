@@ -7,8 +7,8 @@ import subprocess
 from importlib import import_module
 import sys
 from argparse import ArgumentParser
-from pyadb import log
-from pyadb import device
+from fwk import log
+from fwk import device
 from abc import abstractmethod, ABC, abstractproperty
 
 
@@ -97,21 +97,23 @@ class BaseCommand(ABC):
         pass
 
 
-my_dir = os.path.dirname(__file__)
 
-
-def all_commands():
+def all_commands(cmd_dir,pkg):
     all_commands = {}
-    for file in os.listdir(my_dir):
-        if file == '__init__.py' or not file.endswith('.py'):
+    for file in os.listdir(cmd_dir):
+        if file == '__init__.py' or file =='main.py' or not file.endswith('.py'):
             continue
         py_filename = file[:-3]
-
         clsn = py_filename.capitalize()
         while clsn.find('_') > 0:
             h = clsn.index('_')
             clsn = clsn[0:h] + clsn[h + 1:].capitalize()
-        module = import_module('.{}'.format(py_filename), package='pyadb.cmd')
+        # modulename = os.path.basename(cmd_dir) +'.'+py_filename
+        try:
+            module = import_module('.'+py_filename, pkg)
+        except ModuleNotFoundError as e:
+            print(pkg+"."+py_filename +" 导入失败")
+            raise e
         try:
             cmd = getattr(module, clsn)()
         except AttributeError as identifier:
@@ -122,3 +124,16 @@ def all_commands():
         cmd.NAME = name
         all_commands[name] = cmd
     return all_commands
+
+def init(cmd_dir,pkg):
+    arguments = sys.argv[1:]
+    if arguments is None or len(arguments) == 0:
+        sys.stdout.write('error: arguments is empty\n')
+        return
+    cmds = all_commands(cmd_dir,pkg)
+    p,sps = BaseCommand.create()
+    for (subcmd_name, subcmd) in cmds.items():
+        sp = subcmd.create_parser(p,sps)
+        subcmd.parse_args(sp, subcmd_name)
+    BaseCommand.start(p)
+

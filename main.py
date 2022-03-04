@@ -1,6 +1,3 @@
-import sys
-from pyadb.cmd import all_commands
-from pyadb import create_pyadb
-
+import cli
 if __name__ == '__main__':
-    create_pyadb()
+    cli.entry()

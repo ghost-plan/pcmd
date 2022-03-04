@@ -1,5 +1,5 @@
 
-from pyadb import device
+from fwk import device
 from subprocess import PIPE, TimeoutExpired, run
 import subprocess
 import platform
@@ -11,7 +11,7 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-from pyadb import compat
+from fwk import compat
 __t_pool = ThreadPoolExecutor()
 def __cmd_list(cmd, fn=None):
     print('[ cmd ] ', cmd, end='\n')

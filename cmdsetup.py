@@ -5,12 +5,12 @@ with open("README.md", "r") as fh:
 # python setup.py install
 setup(
     name='padb',
-    version='1.0.1',
-    packages=find_packages(include=['pyadb', 'cmd']),
+    version='1.2.0',
+    packages=find_packages(include=['cmds']),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'flask',
+        'cmd-fwk',
     ],
 
     author="jamesfchen",
@@ -40,10 +40,12 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.9',
     ],
     entry_points={
         'console_scripts': [
-            'padb=pyadb:create_pyadb',
+            'padb=cmds:main',
         ],
     }
 )

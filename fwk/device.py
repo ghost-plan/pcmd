@@ -2,7 +2,7 @@ from enum import Enum, unique
 import time
 from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE, run
 import functools,os,sys,re,time
-# from pyadb import log
+# from fwk import log
 
 def __adb_shell_cmd(serial_no, cmd):
     completedProcess = run('adb -s %s shell %s' %
