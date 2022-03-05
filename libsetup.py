@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 # lib
 setup(
     name='cmd_fwk',
-    version='1.2.0',
+    version='1.2.2',
     packages=find_packages(include=['fwk']),
     include_package_data=True,
     zip_safe=False,

@@ -1,4 +1,4 @@
-from fwk import BaseCommand
+from fwk import DeviceCommand
 from fwk.device import (
     get_model, get_brand, get_name,
     get_wm_size, get_wm_density, get_android_version,
@@ -8,7 +8,7 @@ from fwk.device import (
 from fwk.log import print_with_bar
 
 
-class DeviceInfo(BaseCommand):
+class DeviceInfo(DeviceCommand):
     def _create_parser(self, p):
         pyadb_parser = p.add_parser('device-info')
         pyadb_parser.add_argument('-b', '--basic', action='store_true',
@@ -19,7 +19,7 @@ class DeviceInfo(BaseCommand):
             '-i', '--imei', action='store_true', help='get imei')
         return pyadb_parser
 
-    def _parse_args(self, args: "ArgumentParser"):
+    def _parse_args(self, args):
         self.__basic = args.basic
 
     def _execute(self):

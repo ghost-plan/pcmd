@@ -1,7 +1,9 @@
-from fwk import BaseCommand
+from fwk import DeviceCommand
 import sys
 from fwk import log,event
-class LogInfo(BaseCommand):
+
+
+class LogInfo(DeviceCommand):
     def _create_parser(self, p):
         pyadb_parser = p.add_parser('log-info')
         pyadb_parser.add_argument(
@@ -36,7 +38,7 @@ class LogInfo(BaseCommand):
         )
         return pyadb_parser
 
-    def _parse_args(self, args):
+    def _parse_args(self, args: "ArgumentParser"):
         self.__tags = args.tags
         f  = args.format
         for e in log.Format:
