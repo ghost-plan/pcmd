@@ -1,3 +1,3 @@
-import cli
+import cmds
 if __name__ == '__main__':
-    cli.entry()
+    cmds.entry()

@@ -5,7 +5,7 @@ from fwk.device import (
     get_imeis, get_ip_and_mac, get_board,
     get_abilist, get_cpu_core_size, get_heap_size,
 )
-from fwk.utils import print_with_bar
+from fwk.log import print_with_bar
 
 
 class DeviceInfo(BaseCommand):

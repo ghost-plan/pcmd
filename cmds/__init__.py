@@ -1,3 +1,3 @@
 import fwk,os
 def entry():
-    fwk.init(os.path.dirname(__file__), 'cmds')
+    fwk.load_cmds(os.path.dirname(__file__), 'cmds')

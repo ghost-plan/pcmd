@@ -1,6 +1,6 @@
 
 from fwk import device
-from subprocess import PIPE, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired
 import subprocess
 import platform
 import re
@@ -11,24 +11,35 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
-from fwk import compat
-__t_pool = ThreadPoolExecutor()
-def __cmd_list(cmd, fn=None):
-    print('[ cmd ] ', cmd, end='\n')
-    if fn is None:
-        run(cmd, shell=True)
+
+is_macos = "Darwin" in platform.system()
+
+
+def popen(cmd_list):
+    if is_macos:
+        return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
+                     preexec_fn=os.setsid, encoding='utf-8')
     else:
-        with compat.popen(cmd) as pipe:
-            try:
-                res = pipe.communicate()[0]
-                fn(res)
-            except KeyboardInterrupt as e:
-                os.killpg(pipe.pid, signal.SIGINT)
-            except TimeoutExpired as e:
-                os.killpg(pipe.pid, signal.SIGINT)
+        return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
+                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+
+def run(cmd_list):
+    completedProcess = subprocess.run(cmd_list, shell=True, stdout=PIPE, stderr=PIPE)
+    returncode = completedProcess.returncode
+    if returncode == 0:
+        ret = completedProcess.stdout.decode('utf-8').strip()
+        return ret.split('\n') if ret else ''
+    else:
+        # sys.stdout.write()
+        # log.error(completedProcess.stderr.decode('utf-8').strip())
+        return ''
 
 
-def __input_cmd(serial_no, source='', subcmd='', *args):
+def adb_shell(serial_no, cmd):
+    return run('adb -s %s shell %s' % (serial_no, cmd))
+
+
+def adb_shell_input(serial_no, subcmd='', *args, source=''):
     '''
     The sources are:
         mouse
@@ -48,40 +59,38 @@ def __input_cmd(serial_no, source='', subcmd='', *args):
     s = ''
     for i in args:
         s = s+' '+str(i)
-    cmd = 'adb -s %s shell input %s %s %s' % (serial_no, source, subcmd, s)
-    __cmd_list(cmd)
+    adb_shell(serial_no, 'input %s %s %s' % (source, subcmd, s))
 
-
-def input_roll_cmd(serial_no, *args):
+def input_roll(serial_no, *args):
     ''' roll <dx> <dy> (Default: trackball)'''
-    __input_cmd(serial_no,  'trackball', 'roll', *args)
+    adb_shell_input(serial_no, 'roll', *args, source='trackball')
 
 
-def input_press_cmd(serial_no, *args):
+def input_press(serial_no, *args):
     ''' press(Default: trackball)'''
-    __input_cmd(serial_no, 'trackball', 'press', *args)
+    adb_shell_input(serial_no, 'press', *args, source='trackball')
 
 
-def input_tap_cmd(serial_no, *args):
+def input_tap(serial_no, *args):
     '''tap <x> <y> (Default: touchscreen)'''
-    __input_cmd(serial_no, 'touchscreen', 'tap', *args)
+    adb_shell_input(serial_no, 'tap', *args, source='touchscreen')
 
 
-def input_keyevent_cmd(serial_no, *args):
+def input_keyevent(serial_no, *args):
     ''' keyevent [--longpress] <key code number or name> ... (Default: keyboard)
     keyevent map list: https://developer.android.com/reference/android/view/KeyEvent.html
     '''
-    __input_cmd(serial_no,  'keyboard', 'keyevent', * args)
+    adb_shell_input(serial_no, 'keyevent', * args, source='keyboard')
 
 
-def input_text_cmd(serial_no, *args):
+def input_text(serial_no, *args):
     '''adb shell input text hello'''
-    __input_cmd(serial_no, 'touchscreen', 'text', *args)
+    adb_shell_input(serial_no, 'text', *args, source='touchscreen')
 
 
-def input_swipe_cmd(serial_no, *args):
+def input_swipe(serial_no, *args):
     '''swipe <x1> <y1> <x2> <y2> [duration(ms)] (Default: touchscreen)'''
-    __input_cmd(serial_no, 'swipe', *args)
+    adb_shell_input(serial_no, 'swipe', *args)
 
 
 def _capture_event(pipe, screen_width, screen_height, xmin, xmax, ymin, ymax):
@@ -153,7 +162,7 @@ def capture_event(serial_no):
     # print(xmin, xmax, ymin, ymax, screen_width, screen_height)
     # 360.3336422613531,1997.8537836682342
     cmd = 'adb -s {}  shell getevent -tl'.format(serial_no)
-    with compat.popen(cmd) as pipe:
+    with popen(cmd) as pipe:
         _capture_event(pipe, screen_width, screen_height,
                        xmin, xmax, ymin, ymax)
 
@@ -161,8 +170,8 @@ def main():
     d = device.get_devices()[0]
     # capture_event(device.get_devices()[0])
     # input_cmd(d, 'text', 'afdsf', 'adfafs')
-    input_keyevent_cmd(d, '223')
-    input_keyevent_cmd(d, '224')
+    input_keyevent(d, '223')
+    input_keyevent(d, '224')
 
 
 if __name__ == '__main__':

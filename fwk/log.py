@@ -1,8 +1,16 @@
-from subprocess import PIPE, TimeoutExpired, run
+"""pc控制台与手机控制台日志
+
+Keyword arguments:
+argument -- description
+Return: return_description
+"""
+
+from subprocess import PIPE, TimeoutExpired
+import subprocess
+import platform
 import os,signal
 from enum import Enum, unique
 import sys
-from fwk import compat
 ANSI_RED = "\u001B[31m"
 ANSI_YELLOW = "\u001B[33m"
 ANSI_GREEN = "\u001B[32m"
@@ -12,7 +20,16 @@ ANSI_GREEN_BACKGROUND = "\u001B[42m"
 ANSI_YELLOW_BACKGROUND = "\u001B[43m"
 ANSI_BLUE_BACKGROUND = "\u001B[44m"
 ANSI_RESET = "\u001B[0m"
+is_macos = "Darwin" in platform.system()
 
+
+def popen(cmd):
+    if is_macos:
+        return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
+                     preexec_fn=os.setsid, encoding='utf-8')
+    else:
+        return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
+                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
 
 def error(*message):
     s = ''
@@ -47,6 +64,28 @@ def verbose(*message):
     for i in message:
         s = s+str(i)
     print(s)
+
+
+bar = [
+    " [=     ]",
+    " [ =    ]",
+    " [  =   ]",
+    " [   =  ]",
+    " [    = ]",
+    " [     =]",
+    " [    = ]",
+    " [   =  ]",
+    " [  =   ]",
+    " [ =    ]",
+]
+
+
+def print_with_bar(pos, *infos):
+    s = ''
+    for i in infos:
+        s = s+str(i)
+    print(bar[pos % len(bar)] + ' ' + s + '\r')
+
 
 # log.Format.BRIEF.value
 # log.Format.BRIEF.name
@@ -95,7 +134,7 @@ def capture_log(serial_no,tags,format=Format.NONE):
         cmd = 'adb -s %s  shell logcat' % (serial_no)
     if format != Format.NONE:
         cmd = cmd + ' -v %s' % format.name.lower()
-    with compat.popen(cmd) as pipe:
+    with popen(cmd) as pipe:
         try:
             # for line in iter(lambda: pipe.stdout.readline(), ''):
             while True:

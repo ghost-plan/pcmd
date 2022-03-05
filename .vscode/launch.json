@@ -8,13 +8,13 @@
             "name": "Python: pyadb File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/cmds/main.py",
+            "program": "${workspaceFolder}/main.py",
             "args": [
                 // "-s asfsdf",
                 "device-info",
                 // "-b"
                 // "log-info",
-                "--help"
+                "--basic"
             ]
         },
         {

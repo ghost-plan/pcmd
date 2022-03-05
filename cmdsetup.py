@@ -15,11 +15,11 @@ setup(
 
     author="jamesfchen",
     author_email="hawksjamesf@gmail.com",
-    description="pyadb tools",
+    description="padb tools",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",
-    url='https://jamesfchen.github.io/pyadb/',
+    url='https://jamesfchen.github.io/padb/',
     # keywords="",
     # url='',
     classifiers=[

@@ -1,12 +1,12 @@
 from enum import Enum, unique
 import time
-from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE, run
+from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT
+import subprocess
 import functools,os,sys,re,time
-# from fwk import log
 
-def __adb_shell_cmd(serial_no, cmd):
-    completedProcess = run('adb -s %s shell %s' %
-                           (serial_no, cmd), shell=True, stdout=PIPE, stderr=PIPE)
+
+def run(cmd_list):
+    completedProcess = subprocess.run(cmd_list, shell=True, stdout=PIPE, stderr=PIPE)
     returncode = completedProcess.returncode
     if returncode == 0:
         ret = completedProcess.stdout.decode('utf-8').strip()
@@ -15,6 +15,10 @@ def __adb_shell_cmd(serial_no, cmd):
         # sys.stdout.write()
         # log.error(completedProcess.stderr.decode('utf-8').strip())
         return ''
+
+
+def adb_shell(serial_no, cmd):
+    return run('adb -s %s shell %s' % (serial_no, cmd))
 
 def get_devices():
     with os.popen("adb devices") as p:
@@ -54,23 +58,24 @@ def check_device(func):
 #         return wrapper
 #     return decorator
 
+
 @check_device
 def get_model(serial_no):
-    ret = __adb_shell_cmd(serial_no, 'getprop ro.product.model')
+    ret = adb_shell(serial_no, 'getprop ro.product.model')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
 @check_device
 def get_brand(serial_no):
     # ro.product.brand
-    ret = __adb_shell_cmd(serial_no, 'getprop ro.product.brand')
+    ret = adb_shell(serial_no, 'getprop ro.product.brand')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
 @check_device
 def get_name(serial_no):
     # ro.product.name
-    ret = __adb_shell_cmd(serial_no, 'getprop ro.product.name')
+    ret = adb_shell(serial_no, 'getprop ro.product.name')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
@@ -81,7 +86,7 @@ def get_wm_size(serial_no, is_override=False):
     # Physical size: 1080x1920
     # Override size: 480x1024
     '''
-    ret = __adb_shell_cmd(serial_no, 'wm size')
+    ret = adb_shell(serial_no, 'wm size')
     if ret is None or len(ret) == 0:
         return '', ''
 
@@ -97,7 +102,7 @@ def get_wm_size(serial_no, is_override=False):
 # Override density: 160
 @check_device
 def get_wm_density(serial_no, is_override=False):
-    ret = __adb_shell_cmd(serial_no, 'wm density')
+    ret = adb_shell(serial_no, 'wm density')
     line = 1 if is_override else 0
     return int(ret[line].split(':')[1].strip())
 
@@ -105,14 +110,14 @@ def get_wm_density(serial_no, is_override=False):
 @check_device
 def get_wm_displays(serial_no):
     # adb shell dumpsys window displays
-    ret = __adb_shell_cmd(serial_no, 'dumpsys window displays')
+    ret = adb_shell(serial_no, 'dumpsys window displays')
     # TODO:parser window displas
 
 
 @check_device
 def get_android_id(serial_no):
     # adb shell settings get secure android_id
-    ret = __adb_shell_cmd(serial_no, 'settings get secure android_id')
+    ret = adb_shell(serial_no, 'settings get secure android_id')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 
@@ -150,7 +155,7 @@ def compare_version(first_ver, sec_ver):
 
 
 def get_android_version(serial_no):
-    ret = __adb_shell_cmd(
+    ret = adb_shell(
         serial_no, 'getprop ro.build.version.release')
     return ret[0].strip()
 
@@ -181,7 +186,7 @@ def get_imeis(serial_no):
         b = get_brand(serial_no)
         if b == 'HUAWEI' or b == 'HONOR' or b == 'Xiaomi':
             for i in range(0, 20):
-                ret = __adb_shell_cmd(
+                ret = adb_shell(
                     serial_no, 'service call iphonesubinfo %s' % i)
                 n = __get_number(serial_no, ret)
                 if __is_imei(n):
@@ -189,14 +194,14 @@ def get_imeis(serial_no):
 
         elif b == 'Realme' or b == 'OPPO' or b == 'vivo':
             for i in range(1, 3):
-                ret = __adb_shell_cmd(
+                ret = adb_shell(
                     serial_no, 'service call iphonesubinfo 3 i32 %s' % i)
                 n = __get_number(serial_no, ret)
                 if __is_imei(n):
                     imeis.add(n)
         return imeis
     else:
-        ret = __adb_shell_cmd(serial_no, 'dumpsys iphonesubinfo')
+        ret = adb_shell(serial_no, 'dumpsys iphonesubinfo')
         # ret = ['Phone Subscriber Info: Phone Type = GSM Device ID = 860955027785041']
         imei = ret[0].split('=')[-1].strip()
         return imei
@@ -204,11 +209,11 @@ def get_imeis(serial_no):
 
 @check_device
 def get_ip_and_mac(serial_no):
-    ret = __adb_shell_cmd(serial_no, 'ifconfig | grep Mask')
+    ret = adb_shell(serial_no, 'ifconfig | grep Mask')
     if ret is None or len(ret) == 0:
-        ret = __adb_shell_cmd(serial_no, 'ifconfig  wlan0')
+        ret = adb_shell(serial_no, 'ifconfig  wlan0')
         if ret is None or len(ret) == 0:
-            ret = __adb_shell_cmd(serial_no, 'netcfg')
+            ret = adb_shell(serial_no, 'netcfg')
             for e in ret:
                 r = e.split()
                 if '0.0.0.0/0' not in r and '127.0.0.1/8' not in r:
@@ -228,7 +233,7 @@ def get_ip_and_mac(serial_no):
 @check_device
 # ro.product.board
 def get_board(serial_no):
-    ret = __adb_shell_cmd(serial_no, 'getprop ro.product.board')
+    ret = adb_shell(serial_no, 'getprop ro.product.board')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
 #========================================cpu start=================================================================================
@@ -261,10 +266,10 @@ proc/self/sched:
 @check_device
 # ro.product.abilist
 def get_abilist(serial_no):
-    ret = __adb_shell_cmd(serial_no, 'getprop ro.product.cpu.abilist')
+    ret = adb_shell(serial_no, 'getprop ro.product.cpu.abilist')
     if len(ret) == 0:
         # adb shell cat /system/build.prop | grep ro.product.cpu.abi
-        ret = __adb_shell_cmd(
+        ret = adb_shell(
             serial_no, 'cat /system/build.prop | grep ro.product.cpu.abi')
         ret = ['ro.product.cpu.abi = armeabi-v7a',
                'ro.product.cpu.abi2 = armeabi']
@@ -284,7 +289,7 @@ def get_cpu_core_size(serial_no):
 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 7\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'Hardware\t: Hisilicon Kirin710']
     '''
     # adb shell cat / proc/cpuinfo
-    ret = __adb_shell_cmd(serial_no, 'cat /proc/cpuinfo')
+    ret = adb_shell(serial_no, 'cat /proc/cpuinfo')
     for i in range(len(ret)-1, -1, -1):
         line = ret[i]
         if re.match("^processor*", line):
@@ -319,7 +324,7 @@ class Unit(Enum):
 @check_device
 def get_heap_size(serial_no, unit=Unit.M):
     # dalvik.vm.heapsize,unit m
-    ret = __adb_shell_cmd(serial_no, 'getprop dalvik.vm.heapsize')
+    ret = adb_shell(serial_no, 'getprop dalvik.vm.heapsize')
     if len(ret) == 0:
         return ''
     ret = ret[0].strip().split('m')[0]
@@ -342,14 +347,14 @@ def get_mem_info(serial_no):
     '''
     # adb shell cat / proc/meminfo
     # MemTotal 就是设备的总内存，MemFree 是当前空闲内存
-    ret = __adb_shell_cmd(serial_no, 'cat /proc/meminfo')
+    ret = adb_shell(serial_no, 'cat /proc/meminfo')
    
 
 
 @check_device
 def get_battery_info(serial_no):
     # adb shell dumpsys battery
-    ret = __adb_shell_cmd(serial_no, 'dumpsys battery')
+    ret = adb_shell(serial_no, 'dumpsys battery')
     level = ''
     scale = ''
 
@@ -363,7 +368,7 @@ def get_battery_info(serial_no):
 
 @check_device
 def get_iccid(serial_no):
-    ret = __adb_shell_cmd(
+    ret = adb_shell(
         serial_no, 'service call iphonesubinfo %s' % 11)
     n = __get_number(serial_no, ret)
     return n
@@ -373,7 +378,7 @@ def get_iccid(serial_no):
 def get_imsi(serial_no):
     # adb shell service call iphonesubinfo 7 TelephonyManager.getSubscriberId()
     i = 7
-    ret = __adb_shell_cmd(
+    ret = adb_shell(
         serial_no, 'service call iphonesubinfo %s' % i)
     n = __get_number(serial_no, ret)
     return n
@@ -381,11 +386,11 @@ def get_imsi(serial_no):
 
 @check_device
 def switch_airplane(s):
-    __adb_shell_cmd(s, "am force-stop com.android.settings")
+    adb_shell(s, "am force-stop com.android.settings")
     time.sleep(2)
-    __adb_shell_cmd(s, "am start com.android.settings")
+    adb_shell(s, "am start com.android.settings")
     print('switch_airplane: am start com.android.settings')
-    __adb_shell_cmd(s, "input tap 10 30")
+    adb_shell(s, "input tap 10 30")
     time.sleep(2)
     brand = get_brand(s)
     model = get_model(s)
@@ -394,93 +399,93 @@ def switch_airplane(s):
     if brand == "HUAWEI" or brand == "HONOR":
         if model == 'JAT-AL00':
             time.sleep(2)
-            __adb_shell_cmd(s, " input tap 408.0 429.0")
+            adb_shell(s, " input tap 408.0 429.0")
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 627.0 189.0")
+            adb_shell(s, " input tap 627.0 189.0")
             time.sleep(20)
-            __adb_shell_cmd(s, " input tap 627.0 189.0")
+            adb_shell(s, " input tap 627.0 189.0")
             time.sleep(10)
         else:
             if int(version) == 10:
                 time.sleep(2)
-                __adb_shell_cmd(
+                adb_shell(
                     s, " input tap 396.3 1420.5")
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 944.8 318.1")
+                adb_shell(s, " input tap 944.8 318.1")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 952.8 312.1")
+                adb_shell(s, " input tap 952.8 312.1")
                 time.sleep(10)
             else:
                 time.sleep(2)
-                __adb_shell_cmd(s, " input tap 1000 600")
+                adb_shell(s, " input tap 1000 600")
                 time.sleep(2)
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 1000 300")
+                adb_shell(s, " input tap 1000 300")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 1000 300")
+                adb_shell(s, " input tap 1000 300")
                 time.sleep(10)
     if brand == "xiaomi":
         if s == 'ee58c490':
             time.sleep(2)
-            __adb_shell_cmd(s, " input tap 643.5 1464.6")
+            adb_shell(s, " input tap 643.5 1464.6")
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 952.8 1250.5")
+            adb_shell(s, " input tap 952.8 1250.5")
             time.sleep(20)
-            __adb_shell_cmd(s, " input tap 952.8 1250.5")
+            adb_shell(s, " input tap 952.8 1250.5")
             time.sleep(10)
         else:
             time.sleep(2)
-            __adb_shell_cmd(s, " input tap 1000 1520")
+            adb_shell(s, " input tap 1000 1520")
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 1000 300")
+            adb_shell(s, " input tap 1000 300")
             time.sleep(20)
-            __adb_shell_cmd(s, " input tap 1000 300")
+            adb_shell(s, " input tap 1000 300")
             time.sleep(10)
 
     if brand == "OPPO" or brand == 'Realme':
         if model == "PCLM50":
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 1000 900")
+            adb_shell(s, " input tap 1000 900")
             time.sleep(20)
-            __adb_shell_cmd(s, " input tap 1000 900")
+            adb_shell(s, " input tap 1000 900")
             time.sleep(10)
         else:
             if int(version) == 10:
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 861.79 955.40829")
+                adb_shell(s, " input tap 861.79 955.40829")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 861.79 955.40829")
+                adb_shell(s, " input tap 861.79 955.40829")
                 time.sleep(10)
             else:
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 1000 600")
+                adb_shell(s, " input tap 1000 600")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 1000 600")
+                adb_shell(s, " input tap 1000 600")
                 time.sleep(10)
 
     if brand == "vivo":
         if model == "V1965A":
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 1000 1200")
+            adb_shell(s, " input tap 1000 1200")
             time.sleep(5)
-            __adb_shell_cmd(s, " input tap 950 400")
+            adb_shell(s, " input tap 950 400")
             time.sleep(20)
-            __adb_shell_cmd(s, " input tap 950 400")
+            adb_shell(s, " input tap 950 400")
             time.sleep(10)
         else:
             if int(version) == 10:
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 401.3 1543.6")
+                adb_shell(s, " input tap 401.3 1543.6")
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 980.9 387.16")
+                adb_shell(s, " input tap 980.9 387.16")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 980.9 387.16")
+                adb_shell(s, " input tap 980.9 387.16")
                 time.sleep(10)
             else:
                 time.sleep(5)
-                __adb_shell_cmd(s, " input tap 1000 1200")
+                adb_shell(s, " input tap 1000 1200")
                 time.sleep(20)
-                __adb_shell_cmd(s, " input tap 1000 1200")
+                adb_shell(s, " input tap 1000 1200")
                 time.sleep(10)
 
 

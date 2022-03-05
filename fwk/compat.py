@@ -1,12 +1,12 @@
 import platform,os
 import subprocess
 from subprocess import Popen, PIPE
-def __is_macos():
-    return "Darwin" in platform.system()
+from fwk.env import is_macos
 
-
+# os.system()
+# os.popen()
 def popen(cmd):
-    if __is_macos():
+    if is_macos:
         return Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
                    preexec_fn=os.setsid, encoding='utf-8')
     else:

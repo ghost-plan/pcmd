@@ -74,11 +74,10 @@ class BaseCommand(ABC):
 
         self._serial_no = serial_no
         self._imeis = device.get_imeis(serial_no)
-        print(self._imeis)
+        print('imeis:'+str(self._imeis))
         if len(self._imeis) == 0:
-            log.error('no devices')
-            sys.exit(1)
-            pass
+            log.error('not found imeis')
+            # sys.exit(1)
         self._brand = device.get_brand(self._serial_no)
         self._parse_args(args)
         # self.print_with_cmd('parse_args {}'.format(args))
@@ -125,7 +124,8 @@ def all_commands(cmd_dir,pkg):
         all_commands[name] = cmd
     return all_commands
 
-def init(cmd_dir,pkg):
+
+def load_cmds(cmd_dir, pkg):
     arguments = sys.argv[1:]
     if arguments is None or len(arguments) == 0:
         sys.stdout.write('error: arguments is empty\n')
