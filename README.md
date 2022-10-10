@@ -1,3 +1,5 @@
+[![Upload Python Package](https://github.com/electrolyteJ/padb/actions/workflows/python-publish.yml/badge.svg?branch=master)](https://github.com/electrolyteJ/padb/actions/workflows/python-publish.yml)
+
 hi , padb
 
 [pip install padb](https://pypi.org/project/padb/#description)
