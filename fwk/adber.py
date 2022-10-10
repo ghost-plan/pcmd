@@ -6,7 +6,15 @@ import functools
 from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT, PIPE
 import subprocess
 import platform
+import socket
+
 is_macos = "Darwin" in platform.system()
+ENCODING = 'utf-8'
+DEFAULT_ENCODING = ENCODING
+HOST = '127.0.0.1'
+PORT = 5037
+
+
 def run(cmd_list):
     completedProcess = subprocess.run(
         cmd_list, shell=True, stdout=PIPE, stderr=PIPE)
@@ -23,16 +31,18 @@ def run(cmd_list):
 def popen(cmd_list):
     if is_macos:
         return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
-                     preexec_fn=os.setsid, encoding='utf-8')
+                                preexec_fn=os.setsid, encoding='utf-8')
     else:
         return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
-                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+
+
 def adb_shell(serial_no, cmd):
     return run('adb -s %s shell %s' % (serial_no, cmd))
 
 
 def adb_shell_input(serial_no, subcmd, *args, source=''):
-    '''
+    """
     The sources are:
         mouse
         keyboard
@@ -45,12 +55,12 @@ def adb_shell_input(serial_no, subcmd, *args, source=''):
         gesture
         touchscreen
         gamepad
-    '''
+    """
     if len(subcmd) == 0:
         raise BaseException('subcmd must be not empty')
     s = ''
     for i in args:
-        s = s+' '+str(i)
+        s = s + ' ' + str(i)
     adb_shell(serial_no, 'input %s %s %s' % (source, subcmd, s))
 
 
@@ -65,8 +75,11 @@ def adb_shell_pm(serial_no):
 
 def adb_shell_getprop(serial_no):
     pass
+
+
 def adb_shell_dumpsys(serial_no):
     pass
+
 
 def adb_push(serial_no, src, dest):
     return run('adb -s %s push %s %s' % (serial_no, src, dest))
@@ -76,24 +89,24 @@ def adb_pull(serial_no, src, dest):
     return run('adb -s %s pull %s %s' % (serial_no, src, dest))
 
 
-#============================================ adb  connect ========================================================
+# ============================================ adb  connect ========================================================
 
 def encode_data(data):
-    ''' message we sent to server contains 2 parts
+    """ message we sent to server contains 2 parts
         1. length
         2. content
-    '''
+    """
     byte_data = data.encode(DEFAULT_ENCODING)
     byte_length = "{0:04X}".format(len(byte_data)).encode(DEFAULT_ENCODING)
     return byte_length + byte_data
 
 
 def read_all_content(target_socket):
-    ''' and, message we got also contains 3 parts:
+    """ and, message we got also contains 3 parts:
         1. status (4)
         2. length (4)
         3. content (unknown)
-    '''
+    """
     result = b''
     while True:
         buf = target_socket.recv(1024)
@@ -101,8 +114,11 @@ def read_all_content(target_socket):
             return result
         result += buf
 
+
 def adb_client_start():
-    """ create socket and connect to adb server https://android.googlesource.com/platform/system/core/+/jb-dev/adb/SERVICES.TXT"""
+    """
+    create socket and connect to adb server https://android.googlesource.com/platform/system/core/+/jb-dev/adb/SERVICES.TXT
+    """
     with socket.socket() as skt:
         skt.connect((HOST, PORT))
         while True:
@@ -167,20 +183,20 @@ networking:
 '''
 
 
-class AdbServer():
-    '''
+class AdbServer:
+    """
     adb reverse  localabstract:river tcp:27184
-    '''
+    """
 
     def __init__(self) -> None:
         super().__init__()
 
 
-class AdbClient():
-    '''
+class AdbClient:
+    """
     adb forward localabstract
     connect --> select_service('host:transport:device’) -> select_service('localabstract:bbb’)
-    '''
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -217,48 +233,51 @@ class AdbClient():
 
 
 def get_adb_server_port_from_server_socket():
-  socket_spec = os.environ.get('ADB_SERVER_SOCKET')
-  if not socket_spec:
-      return None
-  if not socket_spec.startswith('tcp:'):
-    raise HumanReadableError(
-        'Invalid or unsupported socket spec \'%s\' specified in ADB_SERVER_SOCKET.' % (
-            socket_spec))
-  return socket_spec.split(':')[-1]
+    socket_spec = os.environ.get('ADB_SERVER_SOCKET')
+    if not socket_spec:
+        return None
+    if not socket_spec.startswith('tcp:'):
+        raise HumanReadableError(
+            'Invalid or unsupported socket spec \'%s\' specified in ADB_SERVER_SOCKET.' % (
+                socket_spec))
+    return socket_spec.split(':')[-1]
 
 
 def get_adb_server_port():
-  defaultPort = 5037
-  portStr = get_adb_server_port_from_server_socket(
-  ) or os.environ.get('ANDROID_ADB_SERVER_PORT')
-  if portStr is None:
-    return defaultPort
-  elif portStr.isdigit():
-    return int(portStr)
-  else:
-    raise HumanReadableError(
-        'Invalid integer \'%s\' specified in ANDROID_ADB_SERVER_PORT or ADB_SERVER_SOCKET.' % (
-            portStr))
+    defaultPort = 5037
+    portStr = get_adb_server_port_from_server_socket(
+    ) or os.environ.get('ANDROID_ADB_SERVER_PORT')
+    if portStr is None:
+        return defaultPort
+    elif portStr.isdigit():
+        return int(portStr)
+    else:
+        raise HumanReadableError(
+            'Invalid integer \'%s\' specified in ANDROID_ADB_SERVER_PORT or ADB_SERVER_SOCKET.' % (
+                portStr))
 
 
 class SelectServiceError(Exception):
-  def __init__(self, reason):
-    self.reason = reason
+    def __init__(self, reason):
+        self.reason = reason
 
-  def __str__(self):
-    return repr(self.reason)
+    def __str__(self):
+        return repr(self.reason)
 
 
 class HumanReadableError(Exception):
-  def __init__(self, reason):
-    self.reason = reason
+    def __init__(self, reason):
+        self.reason = reason
 
-  def __str__(self):
-    return self.reason
+    def __str__(self):
+        return self.reason
 
 
 def main():
-    # adb_client_start()
+    pass
+
+
+# adb_client_start()
 
 
 if __name__ == '__main__':

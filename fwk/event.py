@@ -1,4 +1,3 @@
-
 from fwk import device
 from subprocess import PIPE, TimeoutExpired
 import subprocess
@@ -18,10 +17,11 @@ is_macos = "Darwin" in platform.system()
 def popen(cmd_list):
     if is_macos:
         return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
-                     preexec_fn=os.setsid, encoding='utf-8')
+                                preexec_fn=os.setsid, encoding='utf-8')
     else:
         return subprocess.Popen(cmd_list, stdout=PIPE, stderr=PIPE, shell=True,
-                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+
 
 def run(cmd_list):
     completedProcess = subprocess.run(cmd_list, shell=True, stdout=PIPE, stderr=PIPE)
@@ -40,7 +40,7 @@ def adb_shell(serial_no, cmd):
 
 
 def adb_shell_input(serial_no, subcmd='', *args, source=''):
-    '''
+    """
     The sources are:
         mouse
         keyboard
@@ -53,43 +53,44 @@ def adb_shell_input(serial_no, subcmd='', *args, source=''):
         gesture
         touchscreen
         gamepad
-    '''
+    """
     if len(subcmd) == 0:
         raise BaseException('subcmd must be not empty')
     s = ''
     for i in args:
-        s = s+' '+str(i)
+        s = s + ' ' + str(i)
     adb_shell(serial_no, 'input %s %s %s' % (source, subcmd, s))
 
+
 def input_roll(serial_no, *args):
-    ''' roll <dx> <dy> (Default: trackball)'''
+    """ roll <dx> <dy> (Default: trackball)"""
     adb_shell_input(serial_no, 'roll', *args, source='trackball')
 
 
 def input_press(serial_no, *args):
-    ''' press(Default: trackball)'''
+    """ press(Default: trackball)"""
     adb_shell_input(serial_no, 'press', *args, source='trackball')
 
 
 def input_tap(serial_no, *args):
-    '''tap <x> <y> (Default: touchscreen)'''
+    """tap <x> <y> (Default: touchscreen)"""
     adb_shell_input(serial_no, 'tap', *args, source='touchscreen')
 
 
 def input_keyevent(serial_no, *args):
-    ''' keyevent [--longpress] <key code number or name> ... (Default: keyboard)
+    """ keyevent [--longpress] <key code number or name> ... (Default: keyboard)
     keyevent map list: https://developer.android.com/reference/android/view/KeyEvent.html
-    '''
-    adb_shell_input(serial_no, 'keyevent', * args, source='keyboard')
+    """
+    adb_shell_input(serial_no, 'keyevent', *args, source='keyboard')
 
 
 def input_text(serial_no, *args):
-    '''adb shell input text hello'''
+    """adb shell input text hello"""
     adb_shell_input(serial_no, 'text', *args, source='touchscreen')
 
 
 def input_swipe(serial_no, *args):
-    '''swipe <x1> <y1> <x2> <y2> [duration(ms)] (Default: touchscreen)'''
+    """swipe <x1> <y1> <x2> <y2> [duration(ms)] (Default: touchscreen)"""
     adb_shell_input(serial_no, 'swipe', *args)
 
 
@@ -103,7 +104,7 @@ def _capture_event(pipe, screen_width, screen_height, xmin, xmax, ymin, ymax):
                 ABS_MT_POSITION_X = line.split(
                     "ABS_MT_POSITION_X")[-1].strip()
                 raw_x = (int(ABS_MT_POSITION_X, 16) - xmin) * \
-                    screen_width / (xmax - xmin)
+                        screen_width / (xmax - xmin)
                 # print(ABS_MT_POSITION_X,int(ABS_MT_POSITION_X,16),raw_x)
                 line_x = line.replace(ABS_MT_POSITION_X, str(raw_x))
                 line = line.replace(ABS_MT_POSITION_X, str(raw_x))
@@ -111,11 +112,11 @@ def _capture_event(pipe, screen_width, screen_height, xmin, xmax, ymin, ymax):
                 ABS_MT_POSITION_Y = line.split(
                     "ABS_MT_POSITION_Y")[-1].strip()
                 raw_y = (int(ABS_MT_POSITION_Y, 16) - ymin) * \
-                    screen_height / (ymax - ymin)
+                        screen_height / (ymax - ymin)
                 line_y = line.replace(ABS_MT_POSITION_Y, str(raw_y))
                 line = line.replace(ABS_MT_POSITION_Y, str(raw_y))
             elif 'BTN_TOUCH' in line and 'DOWN' in line:
-                print('='*100)
+                print('=' * 100)
                 sys.stdout.write(line_x)
                 sys.stdout.write(line_y)
                 sys.stdout.write(line)
@@ -131,6 +132,8 @@ def _capture_event(pipe, screen_width, screen_height, xmin, xmax, ymin, ymax):
     except TimeoutExpired as e:
         os.killpg(pipe.pid, signal.SIGINT)
         # out_bytes = pipe.communicate()[0]
+
+
 def capture_event(serial_no):
     cmd = 'adb -s {}  shell getevent -lp'.format(serial_no)
     ret = os.popen(cmd).readlines()
@@ -141,14 +144,15 @@ def capture_event(serial_no):
     screen_width = 0.0
     screen_height = 0.0
 
-    def get_value(line):
-        elems = line.split(',')
+    def get_value(the_line):
+        elems = the_line.split(',')
+        min_str = max_str = 0
         for e in elems:
             if 'min' in e:
                 min_str = e.strip().split(" ")[1]
             elif 'max' in e:
                 max_str = e.strip().split(" ")[1]
-        return (float(min_str), float(max_str))
+        return float(min_str), float(max_str)
 
     for line in ret[1:]:
         if 'ABS_MT_POSITION_X' in line:
@@ -165,6 +169,7 @@ def capture_event(serial_no):
     with popen(cmd) as pipe:
         _capture_event(pipe, screen_width, screen_height,
                        xmin, xmax, ymin, ymax)
+
 
 def main():
     d = device.get_devices()[0]

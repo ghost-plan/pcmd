@@ -1,10 +1,10 @@
-"""每个模块都是独立没有相互引用，方便抄袭传播这些脚本
+"""
+每个模块都是独立没有相互引用，方便抄袭传播这些脚本
 
 Keyword arguments:
 argument -- description
 Return: return_description
 """
-
 
 import subprocess
 from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT
@@ -17,6 +17,7 @@ import signal
 import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
+
 
 def run(cmd_list):
     completedProcess = subprocess.run(
@@ -32,13 +33,15 @@ def run(cmd_list):
 
 
 is_macos = "Darwin" in platform.system()
+
+
 def popen(cmd):
     if is_macos:
         return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                     preexec_fn=os.setsid, encoding='utf-8')
+                                preexec_fn=os.setsid, encoding='utf-8')
     else:
         return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
 
 
 def adb_shell(serial_no, cmd):
@@ -46,7 +49,8 @@ def adb_shell(serial_no, cmd):
 
 
 def adb_shell_input(serial_no, subcmd, *args, source=''):
-    '''关键字参数不能放在可变参数前面
+    """
+    关键字参数不能放在可变参数前面
     The sources are:
         mouse
         keyboard
@@ -59,12 +63,12 @@ def adb_shell_input(serial_no, subcmd, *args, source=''):
         gesture
         touchscreen
         gamepad
-    '''
+    """
     if len(subcmd) == 0:
         raise BaseException('subcmd must be not empty')
     s = ''
     for i in args:
-        s = s+' '+str(i)
+        s = s + ' ' + str(i)
     adb_shell(serial_no, 'input %s %s %s' % (source, subcmd, s))
 
 
@@ -111,6 +115,7 @@ def install_app(serial_no, package_name, app_path):
         def task(cmds):
             for cmd in cmds:
                 run(cmd)
+
         __t_pool.submit(task, cmds)
         time.sleep(10)
         adb_shell_input(serial_no, 'tap', 360.333, 1997.853)
@@ -122,7 +127,9 @@ def install_app(serial_no, package_name, app_path):
 
 
 def running_services(serial_no, packagename):
-    '''adb shell dumpsys activity services [ < packagename > ]'''
+    """
+    adb shell dumpsys activity services [ < packagename > ]
+    """
     cmd = 'adb -s %s shell dumpsys activity service %s' % (
         serial_no, packagename)
     run(cmd)
@@ -134,7 +141,7 @@ def top_activity(serial_no):
 
 
 def open_app(serial_no, act):
-    run("adb -s "+serial_no + " shell am start -n {}".format(act))
+    run("adb -s " + serial_no + " shell am start -n {}".format(act))
 
 
 def __process_list_interal(pipe, serial_no, app_uid):
@@ -146,7 +153,7 @@ def __process_list_interal(pipe, serial_no, app_uid):
             line = pipe.stdout.readline()
 
             if line is None or len(line) == 0:
-                print('end'+"="*20)
+                print('end' + "=" * 20)
                 break
             elif isFrist:
                 ret = line.split()
@@ -160,8 +167,8 @@ def __process_list_interal(pipe, serial_no, app_uid):
                     time = ret[6]
                     cmd = ret[7]
 
-                    print(uid+'\t'+pid+'\t'+'p_oom_score'+'\t'+ppid+'\t'+'pp_oom_score'+'\t' +
-                          c+' '+start_time+'   ' + tty+' '+time+'\t' + cmd)
+                    print(uid + '\t' + pid + '\t' + 'p_oom_score' + '\t' + ppid + '\t' + 'pp_oom_score' + '\t' +
+                          c + ' ' + start_time + '   ' + tty + ' ' + time + '\t' + cmd)
                 isFrist = False
 
             elif app_uid in line:
@@ -178,12 +185,12 @@ def __process_list_interal(pipe, serial_no, app_uid):
                     time = ret[6]
                     cmd = ret[7]
 
-                    adb_cmd = 'adb -s '+serial_no + ' shell cat /proc/'+pid+'/oom_score'
+                    adb_cmd = 'adb -s ' + serial_no + ' shell cat /proc/' + pid + '/oom_score'
                     p_oom_score = os.popen(adb_cmd).read().strip()
-                    adb_cmd = 'adb -s '+serial_no + ' shell cat /proc/'+ppid+'/oom_score'
+                    adb_cmd = 'adb -s ' + serial_no + ' shell cat /proc/' + ppid + '/oom_score'
                     pp_oom_score = os.popen(adb_cmd).read().strip()
-                    print(uid+'\t'+pid+'\t'+p_oom_score+'\t\t'+ppid+'\t'+pp_oom_score+'\t\t' +
-                          c+' '+start_time+' ' + tty+' '+time+'\t' + cmd)
+                    print(uid + '\t' + pid + '\t' + p_oom_score + '\t\t' + ppid + '\t' + pp_oom_score + '\t\t' +
+                          c + ' ' + start_time + ' ' + tty + ' ' + time + '\t' + cmd)
 
     except KeyboardInterrupt as e:
         os.killpg(pipe.pid, signal.SIGINT)
@@ -194,16 +201,16 @@ def __process_list_interal(pipe, serial_no, app_uid):
 def process_list(serial_no, pkg_name):
     # adb  shell ps -ef |findstr "com.hawksjamesf"
     if is_macos:
-        uid = os.popen('adb  -s '+serial_no+' shell dumpsys package ' +
-                       pkg_name+' | grep userId= ').read().strip()
+        uid = os.popen('adb  -s ' + serial_no + ' shell dumpsys package ' +
+                       pkg_name + ' | grep userId= ').read().strip()
         if not uid: return ''
-        uid = 'u0_a'+uid.split('=')[1][-3:]
+        uid = 'u0_a' + uid.split('=')[1][-3:]
     else:
         if not uid: return ''
-        uid = os.popen('adb  -s '+serial_no+' shell dumpsys package ' +
-                       pkg_name+'| findstr userId= ').read().strip()
-        uid = 'u0_a'+uid.split('=')[1][-3:]
-    with popen("adb -s "+serial_no + " shell ps -ef") as pipe:
+        uid = os.popen('adb  -s ' + serial_no + ' shell dumpsys package ' +
+                       pkg_name + '| findstr userId= ').read().strip()
+        uid = 'u0_a' + uid.split('=')[1][-3:]
+    with popen("adb -s " + serial_no + " shell ps -ef") as pipe:
         __process_list_interal(pipe, serial_no, uid)
 
 

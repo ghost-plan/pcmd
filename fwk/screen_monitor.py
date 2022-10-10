@@ -1,5 +1,3 @@
-
-
 from device import get_devices
 from subprocess import PIPE, TimeoutExpired, run
 import subprocess
@@ -13,7 +11,9 @@ import sys
 from multiprocessing.connection import Client, Listener, wait, Pipe
 from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
 import tkinter
+
 is_macos = "Darwin" in platform.system()
+
 
 def popen(cmd):
     if is_macos:
@@ -87,8 +87,8 @@ def stop_monitor():
     for i in range(0, len(pipes)):
         p = pipes[i]
         # print('index:', i, 'pipe id :', p.pid)
-        run('kill %s ' % p.pid if ismacos else 'taskkill /t /f /pid %s ' %
-            p.pid, shell=True, stdout=DEVNULL, stderr=DEVNULL)
+        run('kill %s ' % p.pid if ismacos else 'taskkill /t /f /pid %s ' % p.pid, shell=True, stdout=DEVNULL,
+            stderr=DEVNULL)
     pipes.clear()
 
 
@@ -99,7 +99,7 @@ def start_monitor():
     port = 27184
     ds = get_devices()
     ds_size = len(ds)
-    colum_size = round(width/d_width)
+    colum_size = round(width / d_width)
     # print('colum size:', round(colum_size),'devices size:',ds_size)
     row_index = -1  # 0 0+11 11+11
     for i in range(0, ds_size):
@@ -107,10 +107,10 @@ def start_monitor():
         colum_index = i % colum_size
         if colum_index == 0:
             d_w_x = 0
-            row_index = row_index+1
-            d_w_y = d_height*row_index+30
+            row_index = row_index + 1
+            d_w_y = d_height * row_index + 30
         else:
-            d_w_x = d_width+d_w_x
+            d_w_x = d_width + d_w_x
 
         # print('colum_index', colum_index, 'd_w_x:', d_w_x, 'd_w_y:', d_w_y)
         if ismacos:

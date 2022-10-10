@@ -2,7 +2,7 @@ from enum import Enum, unique
 import time
 from subprocess import TimeoutExpired, PIPE, DEVNULL, STDOUT
 import subprocess
-import functools,os,sys,re,time
+import functools, os, sys, re, time
 
 
 def run(cmd_list):
@@ -20,6 +20,7 @@ def run(cmd_list):
 def adb_shell(serial_no, cmd):
     return run('adb -s %s shell %s' % (serial_no, cmd))
 
+
 def get_devices():
     with os.popen("adb devices") as p:
         ret = p.readlines()
@@ -27,7 +28,7 @@ def get_devices():
             return []
         ds = []
         for line in ret[1:]:
-            if (re.match(".*device$", line)):
+            if re.match(".*device$", line):
                 ds.append(line.split("\t")[0])
         return ds
 
@@ -41,6 +42,7 @@ def check_device(func):
             else:
                 sys.stdout.write('device not found')
                 sys.exit(1)
+
     return wrapper
 
 
@@ -81,11 +83,11 @@ def get_name(serial_no):
 
 @check_device
 def get_wm_size(serial_no, is_override=False):
-    '''
+    """
     # adb shell wm size
     # Physical size: 1080x1920
     # Override size: 480x1024
-    '''
+    """
     ret = adb_shell(serial_no, 'wm size')
     if ret is None or len(ret) == 0:
         return '', ''
@@ -140,7 +142,7 @@ def compare_list(i, first, sec):
     ret = compare(a, aa)
     # print(i, a, aa)
     if ret == 0:
-        i = i+1
+        i = i + 1
         return compare_list(i, first, sec)
     else:
         return ret
@@ -150,7 +152,7 @@ def compare_version(first_ver, sec_ver):
     first_vers = first_ver.split('.')
     sec_vers = sec_ver.split('.')
     if len(first_vers) < 1 or len(sec_vers) < 1:
-        raise BaseException("版本号不符合要求,应为xxx.xxx.xxx")
+        raise RuntimeError("版本号不符合要求,应为xxx.xxx.xxx")
     return compare_list(0, first_vers, sec_vers)
 
 
@@ -224,8 +226,8 @@ def get_ip_and_mac(serial_no):
     else:
         ip = ret[0].strip().split(':')[1].strip()[0]
         s: str = ret[0].strip()
-        start = s.index('inet addr:')+len('inet addr:')
-        end = start+11
+        start = s.index('inet addr:') + len('inet addr:')
+        end = start + 11
         ip = s[start:end]
         return ip, ''
 
@@ -236,7 +238,8 @@ def get_board(serial_no):
     ret = adb_shell(serial_no, 'getprop ro.product.board')
     return ret[0].strip() if ret and len(ret) > 0 else ''
 
-#========================================cpu start=================================================================================
+
+# ========================================cpu start====================================================================
 '''
 下面两个指标体现cpu性能
 // 获取 CPU 核心数
@@ -263,6 +266,8 @@ proc/self/sched:
   se.statistics.iowait_count：IO 等待的次数
   se.statistics.iowait_sum：  IO 等待的时间
 '''
+
+
 @check_device
 # ro.product.abilist
 def get_abilist(serial_no):
@@ -284,22 +289,20 @@ def get_abilist(serial_no):
 
 @check_device
 def get_cpu_core_size(serial_no):
-    '''
-    ['Processor\t: AArch64 Processor rev 4 (aarch64)\r', 'processor\t: 0\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 1\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 2\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 3\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 4\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 5\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 6\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 
+    """
+    ['Processor\t: AArch64 Processor rev 4 (aarch64)\r', 'processor\t: 0\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 1\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 2\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 3\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd03\r', 'CPU revision\t: 4\r', '\r', 'processor\t: 4\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 5\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 6\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t:
 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'processor\t: 7\r', 'BogoMIPS\t: 3.84\r', 'Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid\r', 'CPU implementer\t: 0x41\r', 'CPU architecture: 8\r', 'CPU variant\t: 0x0\r', 'CPU part\t: 0xd09\r', 'CPU revision\t: 2\r', '\r', 'Hardware\t: Hisilicon Kirin710']
-    '''
+    """
     # adb shell cat / proc/cpuinfo
     ret = adb_shell(serial_no, 'cat /proc/cpuinfo')
-    for i in range(len(ret)-1, -1, -1):
+    for i in range(len(ret) - 1, -1, -1):
         line = ret[i]
         if re.match("^processor*", line):
-            return int(line.split(':')[1])+1
-    
-#========================================cpu end=================================================================================
+            return int(line.split(':')[1]) + 1
 
+# ========================================cpu end=======================================================================
 
-
-#========================================process start=================================================================================
+# ========================================process start=================================================================
     '''
     /proc/[pid]/stat             // 进程CPU使用情况
     /proc/[pid]/task/[tid]/stat  // 进程下面各个线程的CPU使用情况
@@ -308,17 +311,13 @@ def get_cpu_core_size(serial_no):
     '''
 
 
-
-
-
-
-#========================================process end=================================================================================
+# ========================================process end==================================================================
 @unique
 class Unit(Enum):
     B = 1
     K = 1024
-    M = 1024*K
-    G = 1024*M
+    M = 1024 * K
+    G = 1024 * M
 
 
 @check_device
@@ -329,26 +328,25 @@ def get_heap_size(serial_no, unit=Unit.M):
         return ''
     ret = ret[0].strip().split('m')[0]
     if unit == Unit.B:
-        return ret*Unit.M
+        return ret * Unit.M
     elif unit == Unit.K:
-        return ret*Unit.K
+        return ret * Unit.K
     elif unit == Unit.M:
         return ret
     elif unit == Unit.G:
-        return ret/1024
+        return ret / 1024
 
 
 @check_device
 def get_mem_info(serial_no):
-    '''
-    ['MemTotal:        3768292 kB\r', 'MemFree:           82008 kB\r', 'MemAvailable:    1763668 kB\r', 'Buffers:            4780 kB\r', 'Cached:          1671212 kB\r', 'SwapCached:       136492 kB\r', 'Active:  
-        1701080 kB\r', 'Inactive:        1148344 kB\r', 'Active(anon):     818020 kB\r', 'Inactive(anon):   365260 kB\r', 'Active(file):     883060 kB\r', 'Inactive(file):   783084 kB\r', 'Unevictable:        
+    """
+    ['MemTotal:        3768292 kB\r', 'MemFree:           82008 kB\r', 'MemAvailable:    1763668 kB\r', 'Buffers:            4780 kB\r', 'Cached:          1671212 kB\r', 'SwapCached:       136492 kB\r', 'Active:
+        1701080 kB\r', 'Inactive:        1148344 kB\r', 'Active(anon):     818020 kB\r', 'Inactive(anon):   365260 kB\r', 'Active(file):     883060 kB\r', 'Inactive(file):   783084 kB\r', 'Unevictable:
 2296 kB\r', 'Mlocked:            2296 kB\r', 'SwapTotal:       2293756 kB\r', 'SwapFree:        1703164 kB\r', 'Dirty:               212 kB\r', 'Writeback:             0 kB\r', 'AnonPages:       1163972 kB\r', 'Mapped:           404768 kB\r', 'Shmem:              9744 kB\r', 'Slab:             258684 kB\r', 'SReclaimable:      91428 kB\r', 'SUnreclaim:       167256 kB\r', 'KernelStack:       53440 kB\r', 'PageTables:        78428 kB\r', 'NFS_Unstable:          0 kB\r', 'Bounce:                0 kB\r', 'WritebackTmp:          0 kB\r', 'CommitLimit:     4177900 kB\r', 'Committed_AS:   93899432 kB\r', 'VmallocTotal:   263061440 kB\r', 'VmallocUsed:           0 kB\r', 'VmallocChunk:          0 kB\r', 'CmaTotal:         262144 kB\r', 'CmaFree:             192 kB\r', 'IonTotalCache:         0 kB\r', 'IonTotalUsed:      74420 kB\r', 'RsvTotalUsed:     276484 kB']
-    '''
+    """
     # adb shell cat / proc/meminfo
     # MemTotal 就是设备的总内存，MemFree 是当前空闲内存
     ret = adb_shell(serial_no, 'cat /proc/meminfo')
-   
 
 
 @check_device
@@ -499,7 +497,7 @@ def dimiss_dialog(serial_no, text, i):
             run("adb -s %s shell input tap 815.755  1793.7665" %
                 serial_no, shell=True, stdout=DEVNULL)
             time.sleep(2)
-        print('%d %s：关闭传输文件弹窗,耗时：%dms' % (i, serial_no, time.time()-start))
+        print('%d %s：关闭传输文件弹窗,耗时：%dms' % (i, serial_no, time.time() - start))
     if '软件更新' in text:
         start = time.time()
         brand = get_brand(serial_no)
@@ -515,13 +513,14 @@ def dimiss_dialog(serial_no, text, i):
             run("adb -s %s shell input tap 256.237  2074.886" %
                 serial_no, shell=True, stdout=DEVNULL)
             time.sleep(2)
-        print('%d %s：关闭需要系统更新弹窗,耗时：%dms' % (i, serial_no, time.time()-start))
+        print('%d %s：关闭需要系统更新弹窗,耗时：%dms' % (i, serial_no, time.time() - start))
     else:
         print('%d %s：不用关闭系统更新弹窗' % (i, serial_no))
 
+
 def main():
     for d in get_devices():
-        print('='*50)
+        print('=' * 50)
         print('serial_no:', d)
         print('brand:', get_brand(d))
         print('model:', get_model(d))
@@ -542,5 +541,7 @@ def main():
         print('iccid:', get_iccid(d))
         print('imsi:', get_imsi(d))
         # switch_airplane(d)
+
+
 if __name__ == '__main__':
     main()

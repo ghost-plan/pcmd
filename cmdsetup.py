@@ -13,13 +13,13 @@ setup(
         'cmd-fwk',
     ],
 
-    author="jamesfchen",
+    author="electrolytej",
     author_email="hawksjamesf@gmail.com",
     description="padb tools",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",
-    url='https://jamesfchen.github.io/padb/',
+    url='https://electrolytej.github.io/padb/',
     # keywords="",
     # url='',
     classifiers=[

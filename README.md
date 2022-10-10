@@ -1,6 +1,6 @@
 hi , padb
 
-## get start
+## Get Started
 - pip install padb
 
 - padb --help
@@ -59,9 +59,11 @@ optional arguments:
                         format
   -e, --event           event
 ```
+
 ![log-info](/art/log-info.png)
 
-## framework
+## Framework
+
 轻量级终端指令框架，`pip install cmd-fwk`即可在自己的项目接入。只要创建一个存放命令的文件夹cmds即可。
 
 初始化框架
@@ -116,13 +118,17 @@ class DeviceInfo(BaseCommand):
 
 ```
 
-## package source code
+## Package Source Code
+
 - pip3 install setuptools  ; pip3 install wheel
 - python3 setup.py sdist bdist_wheel
-## upload package
+
+## Upload Package
+
 - pip3 install twine
 - twine upload dist/*
-## reference:
+
+## Reference:
 
 [awesome adb](http://adbcommand.com/awesome-adb/cn)
 

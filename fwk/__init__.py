@@ -1,5 +1,6 @@
 __version__ = "1.0.0"
 __release_date__ = "15-Jun-2020"
+
 import re
 import argparse
 import os
@@ -24,7 +25,7 @@ class BaseCommand(ABC):
         )
         parser.add_argument('--version', action='version', version='1.0.0')
         parser.add_argument('-s', '--serial', dest='serial_no', default='',
-                       help='use device with given serial')
+                            help='use device with given serial')
         sps = parser.add_subparsers()
         return parser, sps
 
@@ -34,7 +35,6 @@ class BaseCommand(ABC):
         args.func(args)
 
     def create_parser(self, p, sps) -> ArgumentParser:
-     
         return self._create_parser(sps)
 
     def parse_args(self, subparser, subcmd_name):
@@ -62,9 +62,9 @@ class BaseCommand(ABC):
         pass
 
 
-class lazy:
+class Lazy:
     """懒加载，kotlin中的by lazy关键字"""
-    
+
     def __init__(self, func):
         self.func = func
 
@@ -80,11 +80,11 @@ class lazy:
 class DeviceCommand(BaseCommand):
     _serial_no = ''
 
-    @lazy
+    @Lazy
     def _brand(self):
         return device.get_brand(self._serial_no)
 
-    @lazy
+    @Lazy
     def _imeis(self):
         return device.get_imeis(self._serial_no)
         # print('imeis:'+str(self._imeis))
@@ -95,7 +95,7 @@ class DeviceCommand(BaseCommand):
     def print_with_cmd(self, *content):
         s = ''
         for i in content:
-            s = s+str(i)
+            s = s + str(i)
         device_info = 's/{} imeis/{} b/{}'.format(
             self._serial_no, self._imeis, self._brand)
         log.info('[ {} ] {} >> {}'.format(self._subcmd_name, device_info, s))
@@ -135,16 +135,16 @@ def all_commands(cmd_dir, pkg):
             clsn = clsn[0:h] + clsn[h + 1:].capitalize()
         # modulename = os.path.basename(cmd_dir) +'.'+py_filename
         try:
-            module = import_module('.'+py_filename, pkg)
+            module = import_module('.' + py_filename, pkg)
         except ModuleNotFoundError as e:
-            print(pkg+"."+py_filename + " 导入失败")
+            print(pkg + "." + py_filename + " 导入失败")
             raise e
         try:
             cmd = getattr(module, clsn)()
         except AttributeError as identifier:
             pass
-            # raise SyntaxError('%s/%s does not define class %s' % (
-            #                  __name__, file, clsn))
+            raise SyntaxError('%s/%s does not define class %s' % (
+                __name__, file, clsn))
         name = py_filename.replace('_', '-')
         cmd.NAME = name
         all_commands[name] = cmd
@@ -159,6 +159,6 @@ def load_cmds(cmd_dir, pkg):
     cmds = all_commands(cmd_dir, pkg)
     p, sps = BaseCommand.create()
     for (subcmd_name, subcmd) in cmds.items():
-        sp = subcmd.create_parser(p,sps)
+        sp = subcmd.create_parser(p, sps)
         subcmd.parse_args(sp, subcmd_name)
     BaseCommand.start(p)

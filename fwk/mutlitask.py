@@ -1,4 +1,5 @@
-"""多进程(并行，parallel) 多线程(并发，concurrent)  协程
+"""
+多进程(并行，parallel) 多线程(并发，concurrent)  协程
 
 多进程multiprocessing  多线程concurrent
 
@@ -100,18 +101,21 @@ def main():
         p_pool.close()
         p_pool.join()
         end = time.time()
-        print("异步多进程耗时:"+str(end-start))
+        print("异步多进程耗时:" + str(end - start))
         start = time.time()
         for i in range(0, 10):
             task(i)
         end = time.time()
-        print("同步多进程耗时:"+str(end-start))
+        print("同步多进程耗时:" + str(end - start))
+
+
 # =====================================多线程===============================================================
 
 # =====================================协程===============================================================
 async def say_after(delay, what):
     await asyncio.sleep(delay)
     print(what)
+
 
 async def entry():
     # 1
@@ -141,14 +145,14 @@ async def entry():
     async def handle(index):
         if index == 2:
             await asyncio.sleep(2)
-        print('index '+str(index))
+        print('index ' + str(index))
         # while True:
         # print('index '+str(index))
         # asyncio.sleep(index)
+
     for i in range(1, 7):
         asyncio.create_task(handle(i))
     print('cjf')
-
 
 
 if __name__ == "__main__":

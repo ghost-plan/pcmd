@@ -14,13 +14,13 @@ setup(
         'requests', 'tqdm'
     ],
 
-    author="jamesfchen",
+    author="electrolytej",
     author_email="hawksjamesf@gmail.com",
     description="cmd fwk",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",
-    url='https://jamesfchen.github.io/pyadb/',
+    url='https://electrolytej.github.io/pyadb/',
     # keywords="",
     # url='',
     classifiers=[
