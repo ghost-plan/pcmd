@@ -1,5 +1,5 @@
 from device import get_devices
-from subprocess import PIPE, TimeoutExpired, run
+from subprocess import TimeoutExpired, run, DEVNULL, STDOUT, PIPE
 import subprocess
 import platform
 import re
@@ -17,11 +17,11 @@ is_macos = "Darwin" in platform.system()
 
 def popen(cmd):
     if is_macos:
-        return Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                     preexec_fn=os.setsid, encoding='utf-8')
+        return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
+                                preexec_fn=os.setsid, encoding='utf-8')
     else:
-        return Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
-                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
+        return subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True,
+                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, encoding='utf-8')
 
 
 def run(cmd_list):
@@ -87,7 +87,7 @@ def stop_monitor():
     for i in range(0, len(pipes)):
         p = pipes[i]
         # print('index:', i, 'pipe id :', p.pid)
-        run('kill %s ' % p.pid if ismacos else 'taskkill /t /f /pid %s ' % p.pid, shell=True, stdout=DEVNULL,
+        run('kill %s ' % p.pid if is_macos else 'taskkill /t /f /pid %s ' % p.pid, shell=True, stdout=DEVNULL,
             stderr=DEVNULL)
     pipes.clear()
 
@@ -113,7 +113,7 @@ def start_monitor():
             d_w_x = d_width + d_w_x
 
         # print('colum_index', colum_index, 'd_w_x:', d_w_x, 'd_w_y:', d_w_y)
-        if ismacos:
+        if is_macos:
             cmd = 'scrcpy -s %s -m 1024 -p %s' % (
                 d, port)
         else:

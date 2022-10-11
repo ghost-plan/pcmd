@@ -191,7 +191,8 @@ class AdbServer:
     def __init__(self) -> None:
         super().__init__()
 
-
+def read_input(sock,len,rea):
+    pass
 class AdbClient:
     """
     adb forward localabstract

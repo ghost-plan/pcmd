@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 from fwk import BaseCommand
 
 
@@ -14,7 +16,7 @@ class TempleCode(BaseCommand):
             '-i', '--imei', action='store_true', help='get imei')
         return pyadb_parser
 
-    def _parse_args(self, args: "ArgumentParser"):
+    def _parse_args(self, args: ArgumentParser):
         pass
 
     def _execute(self):

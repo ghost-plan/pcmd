@@ -1,6 +1,7 @@
 from fwk import DeviceCommand
 import sys
-from fwk import log,event
+from fwk import log, event
+from argparse import ArgumentParser
 
 
 class LogInfo(DeviceCommand):
@@ -10,7 +11,7 @@ class LogInfo(DeviceCommand):
             '--tags',
             dest="tags",
             action='append',
-            default=[], 
+            default=[],
             help="tag"
         )
         pyadb_parser.add_argument(
@@ -19,36 +20,36 @@ class LogInfo(DeviceCommand):
             choices=[
                 log.Format.NONE.name.lower(),
                 log.Format.BRIEF.name.lower(),
-            log.Format.PROCESS.name.lower(),
-            log.Format.TAG.name.lower(),
-            log.Format.RAW.name.lower(),
-            log.Format.TIME.name.lower(),
-            log.Format.THREADTIME.name.lower(),
-            log.Format.LONG.name.lower(),
+                log.Format.PROCESS.name.lower(),
+                log.Format.TAG.name.lower(),
+                log.Format.RAW.name.lower(),
+                log.Format.TIME.name.lower(),
+                log.Format.THREADTIME.name.lower(),
+                log.Format.LONG.name.lower(),
             ],
-            default=log.Format.NONE.name.lower(), 
+            default=log.Format.NONE.name.lower(),
             help="format"
         )
         pyadb_parser.add_argument(
             '-e',
             '--event',
             action='store_true',
-            default=False, 
+            default=False,
             help="event"
         )
         return pyadb_parser
 
-    def _parse_args(self, args: "ArgumentParser"):
+    def _parse_args(self, args: ArgumentParser):
         self.__tags = args.tags
-        f  = args.format
+        f = args.format
         for e in log.Format:
             if f == e.name.lower():
                 self.__format = e
                 break
-        self.__event=args.event
+        self.__event = args.event
 
     def _execute(self):
         if self.__tags and self.__format:
-            log.capture_log(self._serial_no,self.__tags,self.__format)
+            log.capture_log(self._serial_no, self.__tags, self.__format)
         elif self.__event:
             event.capture_event(self._serial_no)
