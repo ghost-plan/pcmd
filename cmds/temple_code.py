@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 
 from fwk import BaseCommand
+from cmds.ext.api import request
 
 
 class TempleCode(BaseCommand):
@@ -20,4 +21,4 @@ class TempleCode(BaseCommand):
         pass
 
     def _execute(self):
-        pass
+        request()

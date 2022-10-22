@@ -5,3 +5,7 @@ Keyword arguments:
 argument -- description
 Return: return_description
 """
+
+def request():
+    print("request")
+    pass

@@ -1,4 +1,4 @@
-[![Upload Python Package](https://github.com/electrolyteJ/padb/actions/workflows/python-publish.yml/badge.svg?branch=master)](https://github.com/electrolyteJ/padb/actions/workflows/python-publish.yml)
+[![Python package](https://github.com/electrolyteJ/padb/actions/workflows/python-package.yml/badge.svg)](https://github.com/electrolyteJ/padb/actions/workflows/python-package.yml)
 
 hi , padb
 
@@ -142,3 +142,13 @@ class DeviceInfo(BaseCommand):
 [Android】ADB工具原理探究](https://itimetraveler.github.io/2019/06/07/Android%20ADB%E5%8E%9F%E7%90%86%E6%8E%A2%E7%A9%B6/#ADB%E7%AE%80%E4%BB%8B)
 
 [python代码规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)
+
+小手动一动，支持一下独立开发者小电
+
+技术公众号：吃地瓜的电解质
+
+![qrcode_for_gh_7ee5cf10b1bf_258](https://user-images.githubusercontent.com/13391139/196029435-7b9f1bbe-3569-46e4-abe3-1625d51b9091.jpeg)
+
+技术交流群：bundles assembler
+
+![image](https://user-images.githubusercontent.com/13391139/196029947-a4d26595-7ff7-42f8-85c4-b46957309222.png)
