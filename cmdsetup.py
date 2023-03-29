@@ -45,7 +45,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'padb=cmds:main',
+            'padb=cmds:entry',
         ],
     }
 )
