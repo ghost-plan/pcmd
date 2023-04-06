@@ -6,11 +6,12 @@ hi , padb
 
 [pip install cmd-fwk](https://pypi.org/project/cmd-fwk/#description)
 
-
 ## Get Started
+
 - pip install padb
 
 - padb --help
+
 ```bash
 usage: command line
 
@@ -26,6 +27,7 @@ optional arguments:
 ```
 
 - padb device-info
+
 ```bash
 usage: command line device-info [-h] [-b] [--top_activity] [-i]
 
@@ -35,7 +37,9 @@ optional arguments:
   --top_activity  top activity
   -i, --imei      get imei
 ```
+
 padb device-info -b
+
 ```bash
 [device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> parse_args Namespace(basic=True, func=<bound method BaseCommand.__execute of <pyadb.cmd.device_info.DeviceInfo object at 0x102d06f28>>, imei=False, serial_no='', top_activity=False)
 [device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> execute
@@ -53,7 +57,9 @@ padb device-info -b
  [ =    ] heap size/m:512
 
 ```
+
 - padb log-info
+
 ```bash
 usage: command line log-info [-h] [--tags TAGS]
                              [--format {none,brief,process,tag,raw,time,threadtime,long}]
@@ -74,25 +80,30 @@ optional arguments:
 轻量级终端指令框架，`pip install cmd-fwk`即可在自己的项目接入。只要创建一个存放命令的文件夹cmds即可。
 
 初始化框架
+
 ```python
-import fwk,os
+import fwk, os
+
+
 def entry():
     fwk.load_cmds(os.path.dirname(__file__), 'cmds')
 ```
 
 在cmds目录下面编写自己的指令
+
 ```python
 from fwk import BaseCommand
-from fwk.device import (
+from fwk import (
     get_model, get_brand, get_name,
     get_wm_size, get_wm_density, get_android_version,
     get_imeis, get_ip_and_mac, get_board,
     get_abilist, get_cpu_core_size, get_heap_size,
 )
-from fwk.log import print_with_bar
+from fwk import print_with_bar
+
 
 class DeviceInfo(BaseCommand):
-    #声明指令的功能
+    # 声明指令的功能
     def _create_parser(self, p):
         pyadb_parser = p.add_parser('device-info')
         pyadb_parser.add_argument('-b', '--basic', action='store_true',
@@ -102,10 +113,12 @@ class DeviceInfo(BaseCommand):
         pyadb_parser.add_argument(
             '-i', '--imei', action='store_true', help='get imei')
         return pyadb_parser
-    #获取指令中的数据
+
+    # 获取指令中的数据
     def _parse_args(self, args: "ArgumentParser"):
         self.__basic = args.basic
-    #执行指令的逻辑
+
+    # 执行指令的逻辑
     def _execute(self):
         if self.__basic:
             print_with_bar(0, 'model:', get_model(self._serial_no))
@@ -125,15 +138,25 @@ class DeviceInfo(BaseCommand):
 
 ```
 
-## Package Source Code
+## Setuptools / Wheel/ Twine Build Tool
 
-- pip3 install setuptools  ; pip3 install wheel
+Package Source Code
+
+- pip3 install setuptools ; pip3 install wheel
 - python3 setup.py sdist bdist_wheel
 
-## Upload Package
+Upload Package
 
 - pip3 install twine
 - twine upload dist/*
+
+## Poetry Build Tool
+
+- Activating the virtual environment:poetry shell
+- add deps:poetry add xxx (poetry add `cat requirements.txt`) or poetry install
+- poetry build | pip3 install dist/padb-1.2.0-py3-none-any.whl --force
+- 开发调试：  poetry build | poetry run python src/main.py --help
+- 发布：poetry build  | poetry publish
 
 ## Reference:
 
@@ -142,3 +165,11 @@ class DeviceInfo(BaseCommand):
 [Android】ADB工具原理探究](https://itimetraveler.github.io/2019/06/07/Android%20ADB%E5%8E%9F%E7%90%86%E6%8E%A2%E7%A9%B6/#ADB%E7%AE%80%E4%BB%8B)
 
 [python代码规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)
+
+[poetry-monorepo](https://gitlab.com/gerbenoostra/poetry-monorepo/-/tree/main/)
+
+[python-monorepo](https://github.com/ya-mori/python-monorepo)
+
+[Python 项目工程化开发指南](https://pyloong.github.io/pythonic-project-guidelines/practices/web/#23)
+
+[poetry](https://python-poetry.org/docs/repositories/)

@@ -1,6 +1,5 @@
 from fwk import DeviceCommand
-import sys
-from fwk import log, event
+from fwk import event, log
 from argparse import ArgumentParser
 
 

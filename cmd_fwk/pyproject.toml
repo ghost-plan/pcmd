@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "cmd_fwk"
+version = "1.2.0"
+description = "padb tools"
+authors = ["electrolyteJ <hawks.jamesf@gmail.com>"]
+license = "Apache2"
+readme = "README.md"
+packages = [{ include = "fwk" , from ="src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tqdm = "^4.65.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

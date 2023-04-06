@@ -1,16 +1,13 @@
 __version__ = "1.0.0"
 __release_date__ = "15-Jun-2020"
 
-import re
 import argparse
 import os
-import subprocess
 from importlib import import_module
 import sys
 from argparse import ArgumentParser
-from fwk import log
-from fwk import device
-from abc import abstractmethod, ABC, abstractproperty
+from fwk import device, log
+from abc import abstractmethod, ABC
 
 
 class BaseCommand(ABC):

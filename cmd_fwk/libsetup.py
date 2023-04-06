@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from setuptools import find_packages, setup
-with open("README.md", "r",encoding='utf-8') as fh:
+with open("../README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 # python setup.py install
 # lib

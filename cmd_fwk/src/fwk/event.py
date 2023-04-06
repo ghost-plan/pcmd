@@ -2,14 +2,9 @@ from fwk import device
 from subprocess import PIPE, TimeoutExpired
 import subprocess
 import platform
-import re
 import os
-import time
-from concurrent.futures import ThreadPoolExecutor
 import signal
 import sys
-from multiprocessing.connection import Client, Listener, wait, Pipe
-from multiprocessing import Queue, Process, Pool, Process, Lock, Value, Array, Manager
 
 is_macos = "Darwin" in platform.system()
 

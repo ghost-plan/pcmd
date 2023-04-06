@@ -1,7 +1,7 @@
-import platform, os
+import os
 import subprocess
 from subprocess import Popen, PIPE
-from fwk.env import is_macos
+from fwk import is_macos
 
 
 # os.system()
