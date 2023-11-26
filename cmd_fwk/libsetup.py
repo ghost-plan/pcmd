@@ -20,7 +20,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",
-    url='https://electrolytej.github.io/pyadb/',
+    url='https://electrolytej.github.io/padb/',
     # keywords="",
     # url='',
     classifiers=[

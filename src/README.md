@@ -33,7 +33,7 @@ optional arguments:
 ```
 padb device-info -b
 ```bash
-[device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> parse_args Namespace(basic=True, func=<bound method BaseCommand.__execute of <pyadb.cmd.device_info.DeviceInfo object at 0x102d06f28>>, imei=False, serial_no='', top_activity=False)
+[device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> parse_args Namespace(basic=True, func=<bound method BaseCommand.__execute of <padb.cmd.device_info.DeviceInfo object at 0x102d06f28>>, imei=False, serial_no='', top_activity=False)
 [device-info:b/HONOR s/CUYDU19701014125 cid/A00000AD7B3287] >> execute
  [=     ] model:YAL-AL00
  [ =    ] brand:HONOR
