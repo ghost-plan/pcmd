@@ -5,13 +5,10 @@ description = "padb tools"
 authors = ["electrolyteJ <hawks.jamesf@gmail.com>"]
 license = "Apache2"
 readme = "README.md"
-packages = [{ include = "fwk" , from ="src"}]
+packages = [{ include = "fastp" , from ="src"}]
 
 [tool.poetry.dependencies]
 tqdm = "^4.65.0"
-
-
-
 
 [build-system]
 requires = ["poetry-core"]

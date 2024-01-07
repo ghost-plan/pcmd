@@ -1,5 +1,5 @@
-from fwk import DeviceCommand
-from fwk import event, log
+from fastp import DeviceCommand
+from fastp import event, log
 from argparse import ArgumentParser
 
 

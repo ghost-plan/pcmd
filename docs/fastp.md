@@ -1,27 +1,27 @@
-[pip install cmd-fwk](https://pypi.org/project/cmd-fwk/#description)
+[pip install cmd-fastp](https://pypi.org/project/cmd-fastp/#description)
 
 ## Framework
 
-轻量级终端指令框架，`pip install cmd-fwk`即可在自己的项目接入。只要创建一个存放命令的文件夹cmds即可。
+轻量级终端指令框架，`pip install cmd-fastp`即可在自己的项目接入。只要创建一个存放命令的文件夹cmds即可。
 
 初始化框架
 ```python
-import fwk,os
+import fastp,os
 def entry():
-    fwk.load_cmds(os.path.dirname(__file__), 'cmds')
+    fastp.load_cmds(os.path.dirname(__file__), 'cmds')
 ```
 
 在cmds目录下面编写自己的指令
 
 ```python
-from fwk import BaseCommand
-from fwk import (
+from fastp import BaseCommand
+from fastp import (
     get_model, get_brand, get_name,
     get_wm_size, get_wm_density, get_android_version,
     get_imeis, get_ip_and_mac, get_board,
     get_abilist, get_cpu_core_size, get_heap_size,
 )
-from fwk import print_with_bar
+from fastp import print_with_bar
 
 
 class DeviceInfo(BaseCommand):

@@ -1,7 +1,7 @@
 import os
 import subprocess
 from subprocess import Popen, PIPE
-from fwk import is_macos
+from fastp import is_macos
 
 
 # os.system()

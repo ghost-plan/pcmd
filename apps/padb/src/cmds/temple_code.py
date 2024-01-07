@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from fwk import BaseCommand
+from fastp import BaseCommand
 from cmds.ext.api import request
 
 
