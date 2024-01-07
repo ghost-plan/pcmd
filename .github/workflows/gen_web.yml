@@ -1,4 +1,4 @@
-name: Pisces CI
+name: pcmd CI
 
 on:
   push:
