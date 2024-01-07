@@ -5,9 +5,9 @@ with open("../README.md", "r", encoding='utf-8') as fh:
 # python setup.py install
 # lib
 setup(
-    name='cmd_fwk',
+    name='fastp',
     version='1.2.2',
-    packages=find_packages(include=['fwk']),
+    packages=find_packages(include=['fastp']),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -16,7 +16,7 @@ setup(
 
     author="electrolytej",
     author_email="hawksjamesf@gmail.com",
-    description="cmd fwk",
+    description="cmd fastp",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache2",

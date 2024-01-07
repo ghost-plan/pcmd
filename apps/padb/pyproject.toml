@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "padb"
+version = "1.2.0"
+description = "padb tools"
+authors = ["electrolyteJ <hawks.jamesf@gmail.com>"]
+license = "Apache2"
+readme = "README.md"
+packages = [{ include = "cmds" , from ="src"}]
+
+
+[tool.poetry.dependencies]
+requests = "^2.28.2"
+fastp = {path="fastp", develop=true}
+
+[tool.poetry.scripts]
+padb = 'cmds:entry'
